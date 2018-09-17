@@ -1,4 +1,7 @@
 # MP3 Manager
+
+[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+
 This project is intended to manage a large collection of MP3 files both from the browser and from a React Native app.
 The interfaces should allow the user:
 
