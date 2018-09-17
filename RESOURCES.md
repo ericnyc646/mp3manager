@@ -7,11 +7,7 @@
  * https://github.com/ybootin/mp3gain.js#run-arguments
 
 ## Using Lerna
- * - https://blog.scottlogic.com/2018/02/23/javascript-monorepos.html
- * - https://codeburst.io/monorepos-by-example-part-1-3a883b49047e
- * - https://medium.com/@luisvieira_gmr/building-large-scale-react-applications-in-a-monorepo-91cd4637c131
- * - https://blog.risingstack.com/node-js-project-structure-tutorial-node-js-at-scale/ Validation
- * - https://hackernoon.com/one-vs-many-why-we-moved-from-multiple-git-repos-to-a-monorepo-and-how-we-set-it-up-f4abb0cfe469
+ * https://blog.risingstack.com/node-js-project-structure-tutorial-node-js-at-scale/ Validation
 
 ## METATAGS
  * https://github.com/aadsm/jsmediatags: (412) Media Tags Reader (ID3, MP4, FLAC)

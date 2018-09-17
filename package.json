@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
-  "dependencies": {},
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
@@ -19,13 +18,21 @@
     "eslint": "^4.16.0",
     "eslint-config-airbnb-base": "^12.0.1",
     "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-jest": "^21.15.0",
+    "eslint-plugin-jest": "^21.22.0",
     "jest": "^23.5.0",
     "jest-junit": "^5.1.0",
     "nodemon": "^1.18.4",
     "regenerator-runtime": "^0.11.0",
     "whatwg-fetch": "^2.0.3"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Christian Castelli <voodoo81people@gmail.com>",
+  "homepage": "https://github.com/chrisvoo/mp3manager",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisvoo/mp3manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chrisvoo/mp3manager/issues"
+  }
 }
