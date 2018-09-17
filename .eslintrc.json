@@ -1,0 +1,40 @@
+{
+    "extends": "airbnb-base",
+    "env": {
+        "node": true,
+        "es6": true,
+        "jest": true
+    },
+    "rules": {
+        "indent": [
+            "error",
+            4,
+            { "SwitchCase": 1 }
+        ],
+        "max-len": [
+            "error",
+            {
+                "code": 140
+            }
+        ],
+        "comma-dangle": [
+            "error",
+            {
+                "arrays": "always-multiline",
+                "objects": "always-multiline"
+            }
+        ],
+        "no-underscore-dangle": 0,
+        "no-prototype-builtins": 0,
+        "no-console": 0,
+        "object-curly-newline": 0,
+        "no-restricted-syntax": ["error", "ForInStatement"],
+        "no-shadow": ["error", { "allow": ["err"] }],
+        "curly": ["error", "all"],
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "arrow-parens": ["error", "always"]
+    },
+    "plugins": [
+      "jest"
+    ]
+}
