@@ -1,5 +1,5 @@
 
-import os from 'os';
+const os = require('os');
 
 const BASE_DIR = `${os.homedir()}/pycom/experiments/mp3manager`;
 
