@@ -43,6 +43,7 @@ export async function musicScan(options = {}) {
     if (!recursive) {
         for (const path of paths) {
             const stats = fs.statSync(path);
+
             if (stats.isFile()) {
                 if (isMp3(path)) {
                     files.push(path);
@@ -61,7 +62,7 @@ export async function musicScan(options = {}) {
         }
 
         if (promises.length) {
-            const filesFound = await Promise.all(promises);
+            const filesFound = _.flatten(await Promise.all(promises));
             const songsPaths = filesFound.filter((file) => isMp3(file));
             return _.union(files, songsPaths);
         }
