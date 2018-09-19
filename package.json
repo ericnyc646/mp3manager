@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "jest --detectOpenHandles"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

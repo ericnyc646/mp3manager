@@ -43,8 +43,7 @@
     "url": "git+https://github.com/chrisvoo/mp3manager.git"
   },
   "scripts": {
-    "start": "babel-node --presets=env --trace-warnings src/start.js",
-    "test": "jest --detectOpenHandles"
+    "start": "babel-node --presets=env --trace-warnings src/start.js"
   },
   "bugs": {
     "url": "https://github.com/chrisvoo/mp3manager/issues"

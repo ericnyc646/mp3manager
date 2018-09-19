@@ -12,16 +12,15 @@ import readdir from 'recursive-readdir';
  * @return {Boolean}       true if it's an MP3, false otherwise
  */
 export function isMp3(param) {
+    let fileRes;
     if (Buffer.isBuffer(param)) {
-        return fileType(param).ext === 'mp3';
+        fileRes = fileType(param);
+    } else if (!_.isEmpty(param) && _.isString(param)) {
+        const buf = readChunk.sync(param, 0, 3);
+        fileRes = fileType(buf);
     }
 
-    if (!_.isEmpty(param) && _.isString(param)) {
-        const buf = readChunk(param, 0, 3);
-        return fileType(buf).ext === 'mp3';
-    }
-
-    return false;
+    return !_.isEmpty(fileRes) && fileRes.ext === 'mp3';
 }
 
 /**

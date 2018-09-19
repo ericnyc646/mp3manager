@@ -1,7 +1,6 @@
 
 # Packages of interest:
 ## UTILS
- * https://www.npmjs.com/package/file-type: Detect the file type of a Buffer/Uint8Array
  * https://github.com/SBoudrias/Inquirer.js#readme interactive CLI
  * https://github.com/ybootin/mp3gain.js#run-arguments
 
