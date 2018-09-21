@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import fs from 'fs';
+import path from 'path';
 import fileType from 'file-type';
-import readChunk from 'read-chunk';
 import readdir from 'recursive-readdir';
 
 /**
@@ -16,7 +16,7 @@ export function isMp3(param) {
     if (Buffer.isBuffer(param)) {
         fileRes = fileType(param);
     } else if (!_.isEmpty(param) && _.isString(param)) {
-        const buf = readChunk.sync(param, 0, 3);
+        const buf = fs.readFileSync(param);
         fileRes = fileType(buf);
     }
 
@@ -41,19 +41,23 @@ export async function musicScan(options = {}) {
     const promises = [];
 
     if (!recursive) {
-        for (const path of paths) {
-            const stats = fs.statSync(path);
+        for (const thePath of paths) {
+            const stats = fs.statSync(thePath);
 
             if (stats.isFile()) {
-                if (isMp3(path)) {
-                    files.push(path);
+                if (isMp3(thePath)) {
+                    files.push(thePath);
                 }
             } else if (stats.isDirectory()) {
                 promises.push(new Promise((resolve, reject) => {
-                    fs.readdir(path, /* { encoding: 'buffer' }, */ (err, theFiles) => {
+                    fs.readdir(thePath, /* { encoding: 'buffer' }, */ (err, result) => {
                         if (err) {
                             return reject(err);
                         }
+
+                        const theFiles = result
+                            .filter((file) => fs.statSync(path.join(thePath, file)).isFile())
+                            .map((file) => path.join(thePath, file));
 
                         return resolve(theFiles);
                     });
@@ -70,8 +74,8 @@ export async function musicScan(options = {}) {
         return files;
     }
 
-    for (const path of paths) {
-        promises.push(readdir(path, [function ignoreFiles(file) {
+    for (const thePath of paths) {
+        promises.push(readdir(thePath, [function ignoreFiles(file) {
             return !isMp3(file);
         }]));
     }

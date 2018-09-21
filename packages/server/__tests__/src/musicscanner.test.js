@@ -10,16 +10,14 @@ describe('Music scanner functions', () => {
 
         const buffer = fs.readFileSync(`${resDir}/sample.mp3`);
         expect(fileType(buffer)).not.toBeNull();
-        expect(isMp3(fs.readFileSync(`${resDir}/sample.mp3`))).toBeTruthy();
+        expect(isMp3(buffer)).toBeTruthy();
     });
 
     test('musicScan: able to scan a tree', async () => {
         expect(musicScan().then((files) => files)).rejects.toThrow('you must specify a list of paths');
 
-        let files;
-        files = await musicScan({ paths: [`${resDir}/tree/level1.1`], recursive: false });
-        // FIXME: readdir strips away the base path, returning just the name
+        const files = await musicScan({ paths: [`${resDir}/tree/level1.1`], recursive: false });
         expect(files.length).toBe(1);
-        expect(files[0]).toEqual('1.1.mp3');
+        expect(files[0]).toEqual(`${resDir}/tree/level1.1/1.1.mp3`);
     });
 });
