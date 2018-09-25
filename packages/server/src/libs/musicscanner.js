@@ -6,8 +6,6 @@ import readdir from 'recursive-readdir';
 
 /**
  * It checks if a file is an MP3
- * TODO: exclude from paths all the paths that are already included by at least one path,
- * to avoid their duplication in the final result
  * @param  {Buffer|String}  param File's path or its Buffer representation
  * @return {Boolean}       true if it's an MP3, false otherwise
  */
@@ -24,6 +22,29 @@ export function isMp3(param) {
 }
 
 /**
+ * It removes from the array all the paths that are subdirectories of
+ * another path in the list or that don't exist
+ * @param  {Array}  [paths=[]] List of absolute paths
+ * @return {Array}  The filtered original set of paths
+ */
+export function cleanPaths(paths = []) {
+    const uniqPaths = _.uniq(paths).filter((item) => path.isAbsolute(item));
+
+    return uniqPaths.map((pathItem) => {
+        for (const refPath of uniqPaths) {
+            const relative = path.relative(refPath, pathItem);
+            const isSubdir = !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+            // console.log(`Scanning for ${pathItem}. Relative[${relative}] for ${refPath}: ${isSubdir}`);
+            if (isSubdir) {
+                return null;
+            }
+        }
+
+        return pathItem;
+    }).filter((item) => !_.isNull(item) && fs.existsSync(item));
+}
+
+/**
  * It scans the specified locations to look up MP3 files
  * @param  {Object} [options={}] it may have the following fields:
  * - paths (Array) an array of paths (usually directories) to look for music files
@@ -37,11 +58,12 @@ export async function musicScan(options = {}) {
         throw new Error('you must specify a list of paths');
     }
 
+    const filteredPaths = cleanPaths(paths);
     const files = [];
     const promises = [];
 
     if (!recursive) {
-        for (const thePath of paths) {
+        for (const thePath of filteredPaths) {
             const stats = fs.statSync(thePath);
 
             if (stats.isFile()) {
@@ -74,7 +96,7 @@ export async function musicScan(options = {}) {
         return files;
     }
 
-    for (const thePath of paths) {
+    for (const thePath of filteredPaths) {
         promises.push(readdir(thePath, [function ignoreFiles(file) {
             return !isMp3(file);
         }]));

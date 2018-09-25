@@ -1,6 +1,7 @@
 import fs from 'fs';
 import fileType from 'file-type';
-import { isMp3, musicScan } from '../../src/libs/musicscanner';
+import _ from 'underscore';
+import { isMp3, musicScan, cleanPaths } from '../../src/libs/musicscanner';
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
@@ -19,5 +20,15 @@ describe('Music scanner functions', () => {
         const files = await musicScan({ paths: [`${resDir}/tree/level1.1`], recursive: false });
         expect(files.length).toBe(1);
         expect(files[0]).toEqual(`${resDir}/tree/level1.1/1.1.mp3`);
+    });
+
+    test('cleanPaths: avoid path duplications', () => {
+        const paths = [
+            resDir, `${resDir}/fake`, '/totally/invented', resDir, '../',
+            `${resDir}/tree/level1.1`, `${process.cwd()}/packages/server/src`,
+        ];
+
+        const expectedResult = [resDir, `${process.cwd()}/packages/server/src`];
+        expect(_.difference(expectedResult, cleanPaths(paths)).length === 0).toBeTruthy();
     });
 });
