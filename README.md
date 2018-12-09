@@ -6,7 +6,7 @@
 This project is intended to manage a large collection of MP3 files both from the browser and from a React Native app.
 The interfaces should allow the user:
 
-- to listen to music, streamed by a server in the same LAN as the client
+- to listen to music, streamed by a server in the same LAN as the client (Web and mobile client)
 - to manage music files (delete them and edit their metatags)
 - display lyrics
 

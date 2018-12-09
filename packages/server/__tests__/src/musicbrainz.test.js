@@ -37,7 +37,7 @@ describe('MusicBrainz tests', () => {
         const client = new MBClient();
         // normal search
         const resp = await client.search('release', { arid: '83d91898-7763-47d7-b03b-b92132375c47' });
-        expect(resp.count).toBe(1435);
+        expect(resp.count >= 1436).toBeTruthy();
         expect(resp.releases.length).toBe(25);
 
         // console.log(util.inspect(resp, { showHidden: false, depth: null }));

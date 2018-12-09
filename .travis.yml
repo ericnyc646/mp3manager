@@ -1,6 +1,11 @@
 language: node_js
 node_js:
   - "lts/*"
+before_install:
+  - sudo apt-get install -y libchromaprint-tools
+addons:
+  apt:
+    update: true
 install:
   - npm install -g lerna
   - lerna bootstrap --hoist
