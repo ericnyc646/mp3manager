@@ -2,29 +2,12 @@ import fpcalc from 'fpcalc';
 import _ from 'underscore';
 import request from 'request-promise-native';
 
-/**
- * It calculates an AcousticID fingerprint. Using different versions of the library, 
- * produces a different hash.
- * @param {String|Stream} obj it must be the path to an audio file or a readable stream.
-If using a stream, note that you will not get duration out due to an fpcalc issue
- */
-export function getAcusticId(obj) {
-    return new Promise((resolve, reject) => {
-        fpcalc(obj, (err, result) => {
-            if (err) {
-                return reject(err);
-            }
-
-            return resolve(result);
-        });
-    });
-}
 
 /**
  * Do not make more than 3 requests per second.
  * No commercial usage
  */
-export class AcusticId {
+export default class AcusticId {
     constructor(key) {
         this.key = key;
         this.endpoint = 'https://api.acoustid.org/v2/lookup';
@@ -32,6 +15,24 @@ export class AcusticId {
         if (_.isEmpty(this.key)) {
             throw new Error('API key required: https://acoustid.org/new-application');
         }
+    }
+
+    /**
+     * It calculates an AcousticID fingerprint. Using different versions of the library,
+     * produces a different hash.
+     * @param {String|Stream} obj it must be the path to an audio file or a readable stream.
+     * If using a stream, note that you will not get duration out due to an fpcalc issue
+    */
+    static getAcusticId(obj) {
+        return new Promise((resolve, reject) => {
+            fpcalc(obj, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+    
+                return resolve(result);
+            });
+        });
     }
 
     /**

@@ -24,6 +24,7 @@
                 "objects": "always-multiline"
             }
         ],
+        "import/prefer-default-export": 0,
         "no-underscore-dangle": 0,
         "no-prototype-builtins": 0,
         "no-console": 0,
