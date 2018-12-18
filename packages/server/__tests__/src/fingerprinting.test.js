@@ -11,7 +11,10 @@ describe('Music fingerprinting functions', () => {
         const result = await getAcusticId(musicPath);
         const { duration, fingerprint } = result;
         expect(duration).toEqual('128');
-        console.log(fingerprint);
-        expect(fingerprint.endsWith('EFAI4AAQAExzhRpNMOCaGoCAAgIgA')).toBeTruthy();
+        // libchromaprint-tools has different version on the offical repo
+        expect(
+            fingerprint.endsWith('EFAI4AAQAExzhRpNMOCaGoCAAgIgA') || // Bionic
+            fingerprint.endsWith('UGRigmqCAMCCsMAMAoEYBATAgE')       // Xenial
+        ).toBeTruthy();
     });
 });
