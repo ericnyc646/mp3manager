@@ -1,5 +1,5 @@
 import util from 'util';
-import MBClient from '../../src/libs/musicbrainz';
+import MBClient from '../../src/libs/MusicBrainz';
 
 describe('MusicBrainz tests', () => {
     test('search: artist', async () => {
@@ -60,6 +60,6 @@ describe('MusicBrainz tests', () => {
             `,
         });
 
-        console.log(util.inspect(resp, { showHidden: false, depth: null }));
+        // console.log(util.inspect(resp, { showHidden: false, depth: null }));
     });
 });

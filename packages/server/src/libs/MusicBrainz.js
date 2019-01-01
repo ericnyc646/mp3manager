@@ -1,4 +1,5 @@
-import NB from 'nodebrainz';
+import MB from 'nodebrainz';
+import config from '../config/getConfig';
 
 /* https://musicbrainz.org/doc/Terminology
  - Artist: An artist is generally a musician (or musician persona), group of musicians, or other
@@ -15,11 +16,13 @@ import NB from 'nodebrainz';
           associated with a single recording, but a recording can be linked to any number
           of tracks. https://musicbrainz.org/doc/Recording
  - Track: is the way a recording is represented on a particular release https://musicbrainz.org/doc/Track
+
+ Rate limiting: 300 requests/sec (on average), and decline (http 503) the rest.
  */
 
 class MBClient {
     constructor(options = {}) {
-        this.useragent = options.useragent || 'MP3TagManager (https://github.com/chrisvoo/mp3manager)';
+        this.useragent = options.useragent || config.apiIntegration.userAgent;
         this.retryOn = options.retryOn || true;
         this.retryDelay = options.retryDelay || 3000;
         this.retryCount = options.retryCount || 3;
@@ -29,7 +32,7 @@ class MBClient {
             retryDelay: this.retryDelay,
             retryCount: this.retryCount,
         };
-        this.client = new NB(this.optionsInit);
+        this.client = new MB(this.optionsInit);
     }
 
     search(entity, options) {

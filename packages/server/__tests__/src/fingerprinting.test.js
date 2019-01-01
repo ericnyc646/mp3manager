@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 // import { inspect } from '../../src/libs/debug';
-import AcusticId from '../../src/libs/fingerprinting';
+import AcusticId from '../../src/libs/AcusticId';
 
 
 describe('Music fingerprinting functions', () => {
@@ -18,7 +18,6 @@ describe('Music fingerprinting functions', () => {
             fingerprint.endsWith('EFAI4AAQAExzhRpNMOCaGoCAAgIgA') || // Bionic
             fingerprint.endsWith('UGRigmqCAMCCsMAMAoEYBATAgE') // Xenial
         ).toBeTruthy();
-        /* eslint-enable */
     });
 
     test('AcusticId class', async () => {

@@ -21,8 +21,20 @@ npm install --global lerna
 lerna bootstrap --hoist
 ```
 
-If you want to add a module for all the projects, just do it with `lerna add <package>@<version> --hoist`. For further information, take a look at the following articles:
+If you want to add a module for all the projects, just do it with `lerna add <package>@<version> --hoist`.
 
-- [Monorepos by example: Part 1](https://codeburst.io/monorepos-by-example-part-1-3a883b49047e)
-- [Building large scale react applications in a monorepo](https://medium.com/@luisvieira_gmr/building-large-scale-react-applications-in-a-monorepo-91cd4637c131)
-- [One vs. many — Why we moved from multiple git repos to a monorepo and how we set it up](https://hackernoon.com/one-vs-many-why-we-moved-from-multiple-git-repos-to-a-monorepo-and-how-we-set-it-up-f4abb0cfe469)
+## Description and usage
+
+This project is composed by two main parts at the moment:
+
+* API server: this endpoint provides the frontend with a set of GraphQL queries and mutations which can be executed by the frontend.
+* Streaming server: this is responsible for serving your music collection files
+
+To start these two components, just type the following commands:
+
+```bash
+npm install --global pm2
+pm2 start <ROOT_PROJECT_DIR>/scripts/ecosystem.config.js
+```
+
+This will launch all the components of the backend through [PM2](https://pm2.io/doc/en/runtime/overview/) and will allow you to view the standard output/error with `pm2 log server` command.

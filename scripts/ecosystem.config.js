@@ -1,7 +1,15 @@
-
+/* eslint-disable */
 const os = require('os');
+const fs = require('fs');
 
-const BASE_DIR = `${os.homedir()}/pycom/experiments/mp3manager`;
+const BASE_DIR = `${os.homedir()}/Documents/mp3manager`;
+
+fs.stat(BASE_DIR, function callback(err, stats) {
+    if (err) {
+        console.error('Please change the BASE_DIR path inside the PM2 ecosystem config.');
+        process.exit(1);
+    }
+});
 
 module.exports = {
 /**
@@ -17,8 +25,8 @@ module.exports = {
         {
             name: 'server',
             script: 'npm',
-            args: 'start',
-            watch: ['./'],
+            args: 'run startServer',
+            watch: [`${BASE_DIR}/packages/server`],
             watch_options: {
                 cwd: `${BASE_DIR}/packages/server`,
             },
@@ -26,11 +34,11 @@ module.exports = {
             ignore_watch: ['node_modules', '__test__'],
             kill_timeout: 3000,
             max_restarts: 3,
-            cwd: `${BASE_DIR}/packages/server`,
+            cwd: BASE_DIR,
             log_date_format: 'YYYY-MM-DD HH:mm:ss',
             env: {
                 PROCESS_FILE: 'mp3manager_server',
-                NODE_ENV: 'development',
+                NODE_ENV: 'production',
                 DEBUG_COLORS: 'true',
             },
             source_map_support: true,

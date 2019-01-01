@@ -11,11 +11,15 @@ import readdir from 'recursive-readdir';
  */
 export function isMp3(param) {
     let fileRes;
-    if (Buffer.isBuffer(param)) {
-        fileRes = fileType(param);
-    } else if (!_.isEmpty(param) && _.isString(param)) {
-        const buf = fs.readFileSync(param);
-        fileRes = fileType(buf);
+    try {
+        if (Buffer.isBuffer(param)) {
+            fileRes = fileType(param);
+        } else if (!_.isEmpty(param) && _.isString(param)) {
+            const buf = fs.readFileSync(param);
+            fileRes = fileType(buf);
+        }
+    } catch (error) {
+        console.error('isMp3 failed for ', param, error.message);
     }
 
     return !_.isEmpty(fileRes) && fileRes.ext === 'mp3';
@@ -97,7 +101,11 @@ export async function musicScan(options = {}) {
     }
 
     for (const thePath of filteredPaths) {
-        promises.push(readdir(thePath, [function ignoreFiles(file) {
+        promises.push(readdir(thePath, [function ignoreFiles(file, stats) {
+            if (stats.isDirectory()) {
+                return false;
+            }
+
             return !isMp3(file);
         }]));
     }

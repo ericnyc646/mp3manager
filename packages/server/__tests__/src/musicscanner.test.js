@@ -1,7 +1,7 @@
 import fs from 'fs';
 import fileType from 'file-type';
 import _ from 'underscore';
-import { isMp3, musicScan, cleanPaths } from '../../src/libs/musicscanner';
+import { isMp3, musicScan, cleanPaths } from '../../src/libs/MusicScanner';
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
