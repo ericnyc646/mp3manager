@@ -1,4 +1,4 @@
-import _ from 'underscore';
+/* import _ from 'underscore';
 import MusicScanner from '../../src/libs/scanner';
 
 describe('Music queue scanner functions', () => {
@@ -20,4 +20,4 @@ describe('Music queue scanner functions', () => {
         const res = await scanner.scan();
         console.log(res);
     }, 40000);
-});
+}); */

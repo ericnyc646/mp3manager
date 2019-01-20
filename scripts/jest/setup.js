@@ -1,3 +1,4 @@
+
 module.exports = async function setup() {
     // catch avoid unhandled promise warnings and stop tests execution
     try {
