@@ -1,10 +1,9 @@
 import bootstrapApolloServer from './libs/apolloServer';
 import bootstrapStreamingServer from './libs/streamer';
 
-// ciaofgfg
-console.time('start');
+console.time('boostrap');
 Promise.all([
     bootstrapApolloServer(),
     bootstrapStreamingServer(),
-]).then(() => console.timeEnd('start'));
+]).then(() => console.timeEnd('boostrap'));
 

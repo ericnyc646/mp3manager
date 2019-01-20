@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+const _ = require('underscore');
+const App = require('./App');
+require('colors');
+
+program.version('1.1.0', '-v, --version');
+program
+    .command('initdb')
+    .description('It recreates a database (test|prod) with your root account')
+    .option('-e, --env <env>', 'The environment')
+    .option('-v, --verbose', 'Logs verbosity', (v, total) => total + 1, 0)
+    .option('-u, --user <user>', "A user with the privileges to create the db's structure", 'root')
+    .option('-p, --password <password>', "The MySQL user's password")
+    .action(async (options) => {
+        const { env, user, password } = options;
+        if (!/^(test|production)$/i.test(env)) {
+            console.error(`Wrong environment: ${env}. Must be "test" or "production"`.red);
+            process.exit(1);
+        }
+
+        if (_.isEmpty(user) || _.isEmpty(password)) {
+            console.error('Please provide the credentials for a MySQL privileged user'.red);
+            process.exit(1);
+        }
+
+        const result = await new App({
+            ...options,
+            command: 'initdb',
+        }).run();
+
+        if (result === true) {
+            console.log(`Database for ${env} successfully created!`.green);
+        } else {
+            // reason logged by App to stdout
+            console.log('Failure'.red);
+        }
+    })
+    .on('--help', () => {
+        console.log('Examples:');
+        console.log();
+        console.log(' $ ./mm initdb -u root -p mypass                                  # It build the test database');
+        console.log(' $ ./mm initdb -u root -p mypass -e production -b pb-123-my-fix   # it builds the production db');
+        console.log();
+    });
+
+program.on('command:*', () => {
+    console.error(`Invalid command: ${program.args.join(' ')}`.red);
+    program.help();
+    process.exit(1);
+});
+
+if (process.argv.length === 2) {
+    program.help();
+    process.exit(1);
+}
+
+program.parse(process.argv);

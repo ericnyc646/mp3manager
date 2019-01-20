@@ -1,15 +1,3 @@
-DROP DATABASE IF EXISTS mp3manager;
-CREATE DATABASE mp3manager 
-  CHARACTER SET = 'utf8'
-  COLLATE = 'utf8_general_ci';
-
-DROP USER IF EXISTS 'mp3admin'@'localhost';
-DROP USER IF EXISTS 'mp3admin'@'127.0.0.1';
-CREATE USER 'mp3admin'@'localhost' IDENTIFIED BY 'eR85/!sP$plO=';
-CREATE USER 'mp3admin'@'127.0.0.1' IDENTIFIED BY 'eR85/!sP$plO=';
-
-USE mp3manager;
-
 CREATE TABLE `file` (
     id SERIAL,
     name VARCHAR(50) NOT NULL,

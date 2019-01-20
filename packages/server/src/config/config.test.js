@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     backend: {
         apiPort: 4666, // graphql server
         streamingPort: 4667, // streaming server
@@ -11,10 +11,18 @@ export default {
         userAgent: 'mp3manager/voodoo81people@gmail.com',
     },
     db: {
-        socketPath: '/tmp/mariatest.sock',
+        socketPath: '/var/run/mysqld/mysqld.sock',
         user: 'mp3admin',
+        host: '127.0.0.1',
         password: 'eR85/!sP$plO=',
         database: 'mp3manager_test',
         connectionLimit: 5,
+    },
+    redis: {
+        port: 6379,
+        host: '127.0.0.1',
+        family: 4,
+        /* password: 'auth', */
+        db: 1,
     },
 };
