@@ -1,7 +1,7 @@
 import fs from 'fs';
 import fileType from 'file-type';
 import isMp3 from '../../src/libs/scanner/ismp3';
-// import musicScan from '../../src/libs/scanner';
+import MusicScanner from '../../src/libs/scanner';
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
@@ -13,4 +13,23 @@ describe('Music scanner functions', () => {
         expect(fileType(buffer)).not.toBeNull();
         expect(isMp3(buffer)).toBeTruthy();
     });
+
+/*     test('scanner', async () => {
+        console.time('musicScanWithQueue');
+
+        const paths = [
+            '/home/ccastelli/Music/3) DA ASCOLTARE/ALTER BRIDGE - DISCOGRAPHY (2004-13) [CHANNELNEO]',
+            '/home/ccastelli/Music/3) DA ASCOLTARE/ZZ Top - Discography (1970-2012)',
+            '/home/ccastelli/Music/3) DA ASCOLTARE/ZZ Top - Discography (1970-2012)/OK',
+            '/home/ccastelli/Music/3) DA ASCOLTARE/Portishead',
+            '/home/ccastelli/Music/3) DA ASCOLTARE/Subsonica',
+            '/home/ccastelli/Music/3) DA ASCOLTARE/Subsonica/Terrestre',
+        ];
+
+        const scanner = new MusicScanner({
+            paths,
+        });
+        const res = await scanner.scan();
+        console.log(res);
+    }, 40000); */
 });
