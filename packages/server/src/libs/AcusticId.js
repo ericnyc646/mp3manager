@@ -1,13 +1,12 @@
-import fpcalc from 'fpcalc';
-import _ from 'underscore';
-import request from 'request-promise-native';
-
+const fpcalc = require('fpcalc');
+const _ = require('underscore');
+const request = require('request-promise-native');
 
 /**
  * Do not make more than 3 requests per second.
  * No commercial usage
  */
-export default class AcusticId {
+class AcusticId {
     constructor(key) {
         this.key = key;
         this.endpoint = 'https://api.acoustid.org/v2/lookup';
@@ -156,3 +155,5 @@ export default class AcusticId {
             });
     }
 }
+
+module.exports = AcusticId;

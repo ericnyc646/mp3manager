@@ -1,7 +1,7 @@
-import path from 'path';
-import fs from 'fs';
+const path = require('path');
+const fs = require('fs');
 // import { inspect } from '../../src/libs/debug';
-import AcusticId from '../../src/libs/AcusticId';
+const AcusticId = require('../../src/libs/AcusticId');
 
 
 describe('Music fingerprinting functions', () => {

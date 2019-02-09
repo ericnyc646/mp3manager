@@ -2,12 +2,17 @@ const types = require('./commonTypes');
 
 const { DateTime, GraphQLJSON } = types;
 
-export const typeDefs = `
+const typeDefs = `
     scalar DateTime
     scalar GraphQLJSON
 `;
 
-export const resolvers = {
+const resolvers = {
     DateTime,
     GraphQLJSON,
+};
+
+module.exports = {
+    typeDefs,
+    resolvers,
 };

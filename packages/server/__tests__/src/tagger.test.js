@@ -1,7 +1,6 @@
-import cp from 'child_process';
+const cp = require('child_process');
 // import util from 'util';
-import _ from 'underscore';
-
+const _ = require('underscore');
 const metadata = require('music-metadata');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;

@@ -3,22 +3,20 @@ CREATE TABLE `file` (
     name VARCHAR(50) NOT NULL,
     atime DATETIME COMMENT 'Access time',
     mtime DATETIME COMMENT 'Modification time',
+    size INT COMMENT 'File size in bytes',
     path TEXT NOT NULL,
     acousticid_hash TEXT COMMENT 'Calculated by fpcalc',
     md5_hash CHAR(32),
-    bitrate SMALLINT UNSIGNED, 
-    rating TINYINT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CHECK (rating >= 0 AND rating <= 5),
-    CHECK (bitrate > 0 AND bitrate <= 320)
+    PRIMARY KEY (id)
 ) ENGINE = InnoDB, COMMENT = 'Music files';
 
 
 CREATE TABLE `band` (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
+    genres JSON COMMENT 'Array of genres',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
@@ -76,13 +74,18 @@ CREATE TABLE `album_musician` (
 CREATE TABLE `track` (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
+    bitrate SMALLINT UNSIGNED, 
+    rating TINYINT,
+    genre VARCHAR(50) COMMENT 'Particular genre for this track',
     album_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY track_album_id_fk(album_id) 
         REFERENCES album(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CHECK (rating >= 0 AND rating <= 5),
+    CHECK (bitrate > 0 AND bitrate <= 320)
 ) ENGINE = InnoDB, COMMENT = 'Music tracks';
 
 

@@ -1,14 +1,14 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import { execute, subscribe } from 'graphql';
-import { ApolloServer } from 'apollo-server-express';
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import cors from 'cors';
-import http from 'http';
-import config from '../config/getConfig';
-import schema from '../models/graphql/schema';
+const express = require('express');
+const bodyParser = require('body-parser');
+const { execute, subscribe } = require('graphql');
+const { ApolloServer } = require('apollo-server-express');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const cors = require('cors');
+const http = require('http');
+const config = require('../config/getConfig');
+const schema = require('../models/graphql/schema');
 
-export default function bootstrapApolloServer() {
+function bootstrapApolloServer() {
     console.log('config', config);
     return new Promise((resolve, reject) => {
         try {
@@ -50,3 +50,5 @@ export default function bootstrapApolloServer() {
         }
     });
 }
+
+module.exports = bootstrapApolloServer;

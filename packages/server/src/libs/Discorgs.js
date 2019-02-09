@@ -1,8 +1,7 @@
-import _ from 'underscore';
-import { Client } from 'disconnect';
-import config from '../config/getConfig';
+const { Client } = require('disconnect');
+const config = require('../config/getConfig');
 
-export default class Discogs {
+class Discogs {
     constructor(options = {}) {
         this.useragent = options.useragent || config.apiIntegration.userAgent;
         let auth;
@@ -70,7 +69,7 @@ export default class Discogs {
 
     /**
      * Queries the database
-     * @param {(string|Object)} query 
+     * @param {(string|Object)} query
      * @param {Object} params
      * @see https://www.discogs.com/developers/#page:database,header:database-search
      */
@@ -78,3 +77,5 @@ export default class Discogs {
         return this.api.database().search(query, params);
     }
 }
+
+module.exports = Discogs;

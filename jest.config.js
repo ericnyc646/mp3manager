@@ -1,14 +1,6 @@
 /* Jest file configuration.
  * It keeps package.json cleaner and permits to load
- * ES6 setup/teardown scripts before/after the tests by using
- * babel config file */
-const { readFileSync } = require('fs');
-
-const babelConfig = JSON.parse(readFileSync('./.babelrc', 'utf8'));
-
-require('babel-register')(babelConfig);
-require('babel-polyfill');
-
+ * ES6 setup/teardown scripts before/after the tests */
 const { join } = require('path');
 
 const ROOT = `${process.cwd()}`;
@@ -22,5 +14,4 @@ module.exports = {
     ],
     testEnvironment: 'node',
     globalSetup: join(ROOT, 'scripts/jest/setup.js'),
-    globalTeardown: join(ROOT, 'scripts/jest/teardown.js'),
 };

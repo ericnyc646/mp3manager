@@ -1,7 +1,7 @@
-import request from 'request-promise-native';
-import config from '../config/getConfig';
+const request = require('request-promise-native');
+const config = require('../config/getConfig');
 
-export default class Wikipedia {
+class Wikipedia {
     constructor(options) {
         this.options = options;
         this.PAGE_ENDPOINT = 'https://en.wikipedia.org/api/rest_v1';
@@ -37,3 +37,5 @@ export default class Wikipedia {
         return this._makePageRequest(`/page/summary/${title}`);
     }
 }
+
+module.exports = Wikipedia;

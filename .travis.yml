@@ -8,6 +8,13 @@ before_install:
 addons:
   apt:
     update: true
+  mariadb: '10.3'
+before_script:
+  - mysql -u root -e "CREATE DATABASE mp3manager_test CHARACTER SET = 'utf8' COLLATE = 'utf8_general_ci';"
+  - mysql -u root -e "CREATE USER 'mp3admin_test'@'127.0.0.1' IDENTIFIED BY 'musictest';"
+  - mysql -u root -e "GRANT ALL ON mp3manager_test.* TO 'mp3admin_test'@'127.0.0.1';"
+  - mysql -u root -e "CREATE USER 'mp3admin_test'@'localhost' IDENTIFIED BY 'musictest';"
+  - mysql -u root -e "GRANT ALL ON mp3manager_test.* TO 'mp3admin_test'@'localhost';"
 install:
   - npm install -g lerna
   - lerna bootstrap --hoist

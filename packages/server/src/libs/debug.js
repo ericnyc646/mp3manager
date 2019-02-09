@@ -1,13 +1,13 @@
-import util from 'util';
+const util = require('util');
 
 /**
  * Shortcut for inspecting an object
  * @param {Object} obj
  */
-export function inspect(obj) {
+module.exports = function inspect(obj) {
     console.log(util.inspect(obj, {
         showHidden: true,
         depth: null,
         colors: true,
     }));
-}
+};

@@ -1,7 +1,7 @@
 /* Put here every custom type reusable in other definitions, so this
  * becomes the single access point for them */
-import GraphQLJSON from 'graphql-type-json';
-import { GraphQLScalarType, Kind } from 'graphql';
+const GraphQLJSON = require('graphql-type-json');
+const { GraphQLScalarType, Kind } = require('graphql');
 
 /* Custom scalar type for representing a Date, which
  * is serialized and parsed as Unix timestamp in milliseconds */

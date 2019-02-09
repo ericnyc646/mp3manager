@@ -16,6 +16,7 @@ class App {
         this.user = user;
         this.password = password;
         this.command = command;
+        this.connection = null;
     }
 
     /**
@@ -23,7 +24,12 @@ class App {
      * parameter passed by `mm`
      */
     run() {
-        return this[`_${this.command}`]();
+        try {
+            return this[`${this.command}`]();
+        } catch (e) {
+            console.error(`Run failed for ${this.command}: ${e.message}`);
+            return false;
+        }
     }
 
     /**
@@ -43,30 +49,99 @@ class App {
     }
 
     /**
-     * It drops and recreates the music database both for test and production environment.
+     * Shortcut for installing creating users ad database. If they already exist, they'll
+     * be dropped
+     */
+    install() {
+        return this.initUsers()
+            .then((result) => {
+                if (result === true) {
+                    return this.initdb();
+                }
+
+                return false;
+            });
+    }
+
+    /**
+     * @returns a new connection if there isn't a valid existing one or the old valid
+     * connection
+     */
+    async _getConnection() {
+        if (!_.isEmpty(this.connection) && this.connection.isValid()) {
+            return this.connection;
+        }
+
+        const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
+        const {
+            socketPath,
+            database: musicDbName,
+        } = config.db;
+
+        return mariadb.createConnection({
+            user: this.user,
+            socketPath,
+            password: this.password,
+            database: musicDbName,
+        });
+    }
+
+    /**
+     * It creates al the required users with their privileges
+     */
+    async initUsers() {
+        this.connection = await this._getConnection();
+        const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
+        const {
+            user: musicDbUser,
+            password: musicDbPass,
+            database: musicDbName,
+        } = config.db;
+
+        console.log(`_initUsers for ${musicDbUser}@${musicDbName} [${this.env}]...`);
+
+        try {
+            await Promise.all([
+                this.connection.query(`DROP USER IF EXISTS '${musicDbUser}'@'127.0.0.1'`),
+                this.connection.query(`DROP USER IF EXISTS '${musicDbUser}'@'localhost'`),
+            ]);
+
+            await Promise.all([
+                this.connection.query(`CREATE USER '${musicDbUser}'@'127.0.0.1' IDENTIFIED BY '${musicDbPass}'`),
+                this.connection.query(`CREATE USER '${musicDbUser}'@'localhost' IDENTIFIED BY '${musicDbPass}'`),
+            ]);
+
+            await Promise.all([
+                this.connection.query(`GRANT ALL ON ${musicDbName}.* TO '${musicDbUser}'@'127.0.0.1'`),
+                this.connection.query(`GRANT ALL ON ${musicDbName}.* TO '${musicDbUser}'@'localhost'`),
+            ]);
+
+            return true;
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
+
+    /**
+     * It drops and recreates the music database for a particular environment.
      * It relies on a MariaDB account with privileges for creating users and database (default
      * `root`)
      */
-    async _initdb() {
-        let connection;
+    async initdb() {
         try {
+            this.connection = await this._getConnection();
             const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
-            const { host, socketPath, database: musicDbName, password: musicDbPass, user: musicDbUser } = config.db;
-            connection = await mariadb.createConnection({
-                host,
-                user: this.user,
-                socketPath,
-                password: this.password,
-            });
+            const { database: musicDbName } = config.db;
 
-            await connection.query(`DROP DATABASE IF EXISTS ${musicDbName}`);
-            await connection.query(`
+            console.log(`_initdb ${musicDbName} [${this.env}]...`);
+
+            await this.connection.query(`DROP DATABASE IF EXISTS ${musicDbName}`);
+            await this.connection.query(`
                 CREATE DATABASE ${musicDbName}
                     CHARACTER SET = 'utf8'
                     COLLATE = 'utf8_general_ci';
             `);
-            await connection.query(`DROP USER IF EXISTS '${musicDbUser}'@'${host}'`);
-            await connection.query(`CREATE USER '${musicDbUser}'@'${host}' IDENTIFIED BY '${musicDbPass}'`);
 
             const tablesFile = `${__dirname}/../database/tables.sql`;
             const { stdout, stderr } = await App.runShellCommand(`
@@ -82,8 +157,15 @@ class App {
         } catch (e) {
             console.error(e);
             return false;
-        } finally {
-            connection.end();
+        }
+    }
+
+    /**
+     * Clear the resources
+     */
+    end() {
+        if (_.isEmpty(this.connection)) {
+            this.connection.end();
         }
     }
 }

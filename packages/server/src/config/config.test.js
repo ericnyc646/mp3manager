@@ -12,9 +12,8 @@ module.exports = {
     },
     db: {
         socketPath: '/var/run/mysqld/mysqld.sock',
-        user: 'mp3admin',
-        host: '127.0.0.1',
-        password: 'eR85/!sP$plO=',
+        user: 'mp3admin_test',
+        password: 'musictest',
         database: 'mp3manager_test',
         connectionLimit: 5,
     },

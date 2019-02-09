@@ -1,5 +1,5 @@
-import util from 'util';
-import MBClient from '../../src/libs/MusicBrainz';
+// const util = require('util');
+const MBClient = require('../../src/libs/MusicBrainz');
 
 describe('MusicBrainz tests', () => {
     test('search: artist', async () => {

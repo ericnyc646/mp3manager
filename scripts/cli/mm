@@ -7,8 +7,8 @@ require('colors');
 
 program.version('1.1.0', '-v, --version');
 program
-    .command('initdb')
-    .description('It recreates a database (test|prod) with your root account')
+    .command('install')
+    .description('It creates the database and its users (test|prod) with your root account')
     .option('-e, --env <env>', 'The environment')
     .option('-v, --verbose', 'Logs verbosity', (v, total) => total + 1, 0)
     .option('-u, --user <user>', "A user with the privileges to create the db's structure", 'root')
@@ -27,7 +27,7 @@ program
 
         const result = await new App({
             ...options,
-            command: 'initdb',
+            command: 'install',
         }).run();
 
         if (result === true) {
@@ -36,12 +36,13 @@ program
             // reason logged by App to stdout
             console.log('Failure'.red);
         }
+        process.exit(0);
     })
     .on('--help', () => {
         console.log('Examples:');
         console.log();
-        console.log(' $ ./mm initdb -u root -p mypass                                  # It build the test database');
-        console.log(' $ ./mm initdb -u root -p mypass -e production -b pb-123-my-fix   # it builds the production db');
+        console.log(' $ ./mm initdb -u root -p mypass                  # It build the test database');
+        console.log(' $ ./mm initdb -u root -p mypass -e production    # it builds the production db');
         console.log();
     });
 

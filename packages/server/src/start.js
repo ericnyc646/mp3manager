@@ -1,5 +1,5 @@
-import bootstrapApolloServer from './libs/apolloServer';
-import bootstrapStreamingServer from './libs/streamer';
+const bootstrapApolloServer = require('./libs/apolloServer');
+const bootstrapStreamingServer = require('./libs/streamer');
 
 console.time('boostrap');
 Promise.all([

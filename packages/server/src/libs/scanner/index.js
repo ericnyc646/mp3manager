@@ -1,10 +1,10 @@
-import Queue from 'bull';
-import os from 'os';
-import path from 'path';
-import _ from 'underscore';
-import config from '../../config/getConfig';
+const Queue = require('bull');
+const os = require('os');
+const path = require('path');
+const _ = require('underscore');
+const config = require('../../config/getConfig');
 
-export default class MusicScanner {
+class MusicScanner {
     constructor(options) {
         if (_.isEmpty(options) || _.isEmpty(options.paths)) {
             throw new Error('You must specify the `paths` property');
@@ -62,3 +62,5 @@ export default class MusicScanner {
         });
     }
 }
+
+module.exports = MusicScanner;

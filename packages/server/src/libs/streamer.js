@@ -1,10 +1,10 @@
-import http from 'http';
-import url from 'url';
-import _ from 'underscore';
-import fs from 'fs';
-import config from '../config/getConfig';
+const http = require('http');
+const url = require('url');
+const _ = require('underscore');
+const fs = require('fs');
+const config = require('../config/getConfig');
 
-export default function bootstrapStreamingServer() {
+function bootstrapStreamingServer() {
     return new Promise((resolve, reject) => {
         try {
             http.createServer((request, response) => {
@@ -37,3 +37,5 @@ export default function bootstrapStreamingServer() {
         }
     });
 }
+
+module.exports = bootstrapStreamingServer;

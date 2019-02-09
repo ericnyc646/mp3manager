@@ -1,5 +1,5 @@
-import MB from 'nodebrainz';
-import config from '../config/getConfig';
+const MB = require('nodebrainz');
+const config = require('../config/getConfig');
 
 /* https://musicbrainz.org/doc/Terminology
  - Artist: An artist is generally a musician (or musician persona), group of musicians, or other
@@ -52,4 +52,5 @@ class MBClient {
     }
 }
 
-export default MBClient;
+module.exports = MBClient;
+

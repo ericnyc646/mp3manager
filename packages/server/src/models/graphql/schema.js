@@ -1,8 +1,8 @@
-import { makeExecutableSchema } from 'graphql-tools';
-import { mergeTypes, mergeResolvers } from 'merge-graphql-schemas';
-import { resolvers as scalarsResolvers, typeDefs as scalarsTypeDefs } from './scalars';
+const { makeExecutableSchema } = require('graphql-tools');
+const { mergeTypes, mergeResolvers } = require('merge-graphql-schemas');
+const { resolvers: scalarsResolvers, typeDefs: scalarsTypeDefs } = require('./scalars');
 // TODO: remove this as soon as you've something real
-import { resolvers as dummyResolvers, typeDefs as dummyTypeDefs } from './dummy';
+const { resolvers: dummyResolvers, typeDefs: dummyTypeDefs } = require('./dummy');
 
 const schemaDefinition = `
   schema {
@@ -15,7 +15,7 @@ const schemaDefinition = `
 const resolvers = [scalarsResolvers, dummyResolvers];
 const types = [schemaDefinition, scalarsTypeDefs, dummyTypeDefs];
 
-export default makeExecutableSchema({
+module.exports = makeExecutableSchema({
     typeDefs: mergeTypes(types),
     resolvers: mergeResolvers(resolvers),
 });

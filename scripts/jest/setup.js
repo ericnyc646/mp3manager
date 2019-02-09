@@ -1,9 +1,13 @@
+const App = require('../cli/App');
+const config = require('../../packages/server/src/config/config.test');
 
 module.exports = async function setup() {
-    // catch avoid unhandled promise warnings and stop tests execution
-    try {
-        console.log('setup');
-    } catch (e) {
-        throw new Error(e);
-    }
+    const { user, password, socketPath } = config.db;
+    return new App({
+        env: 'test',
+        command: 'initdb',
+        user,
+        password,
+        socketPath,
+    }).run();
 };

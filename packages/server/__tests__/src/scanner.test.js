@@ -1,7 +1,7 @@
-import fs from 'fs';
-import fileType from 'file-type';
-import isMp3 from '../../src/libs/scanner/ismp3';
-import MusicScanner from '../../src/libs/scanner';
+const fs = require('fs');
+const fileType = require('file-type');
+const isMp3 = require('../../src/libs/scanner/ismp3');
+const MusicScanner = require('../../src/libs/scanner');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 

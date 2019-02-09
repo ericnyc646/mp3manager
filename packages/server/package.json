@@ -48,5 +48,6 @@
     "request-promise-native": "~1.0.5",
     "subscriptions-transport-ws": "~0.9.14",
     "underscore": "^1.9.1"
-  }
+  },
+  "devDependencies": {}
 }

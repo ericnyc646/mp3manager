@@ -1,6 +1,6 @@
 // Graphql doesn't allow empty Query object
 
-export const typeDefs = `
+const typeDefs = `
     type Query {
         dummy: Boolean
     }
@@ -14,7 +14,7 @@ export const typeDefs = `
     }
 `;
 
-export const resolvers = {
+const resolvers = {
     Query: {
         dummy(o, args, params) {
             console.log(params);
@@ -33,4 +33,9 @@ export const resolvers = {
             return true;
         },
     },
+};
+
+module.exports = {
+    typeDefs,
+    resolvers,
 };
