@@ -40,5 +40,5 @@ describe('File model', () => {
         expect(_.isDate(atime)).toBeTruthy();
         expect(!_.isEmpty(acousticid_hash)).toBeTruthy();
         expect(md5_hash).toEqual('057019f5a99230478b1498ab1d7d8894');
-    });
+    }, 10000);
 });

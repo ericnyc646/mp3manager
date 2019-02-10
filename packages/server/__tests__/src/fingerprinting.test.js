@@ -18,7 +18,7 @@ describe('Music fingerprinting functions', () => {
             fingerprint.endsWith('EFAI4AAQAExzhRpNMOCaGoCAAgIgA') || // Bionic
             fingerprint.endsWith('UGRigmqCAMCCsMAMAoEYBATAgE') // Xenial
         ).toBeTruthy();
-    });
+    }, 10000);
 
     test('AcusticId class', async () => {
         const AId = new AcusticId('FCDadKOJ5f');
@@ -41,5 +41,5 @@ describe('Music fingerprinting functions', () => {
         });
         expect(result.status).toEqual('ok');
         // inspect(result);
-    });
+    }, 10000);
 });

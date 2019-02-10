@@ -9,7 +9,7 @@ program.version('1.1.0', '-v, --version');
 program
     .command('install')
     .description('It creates the database and its users (test|prod) with your root account')
-    .option('-e, --env <env>', 'The environment')
+    .option('-e, --env <env>', 'The environment', 'test')
     .option('-v, --verbose', 'Logs verbosity', (v, total) => total + 1, 0)
     .option('-u, --user <user>', "A user with the privileges to create the db's structure", 'root')
     .option('-p, --password <password>', "The MySQL user's password")
@@ -41,8 +41,8 @@ program
     .on('--help', () => {
         console.log('Examples:');
         console.log();
-        console.log(' $ ./mm initdb -u root -p mypass                  # It build the test database');
-        console.log(' $ ./mm initdb -u root -p mypass -e production    # it builds the production db');
+        console.log(' $ ./mm install -u root -p mypass                  # It build the test database');
+        console.log(' $ ./mm install -u root -p mypass -e production    # it builds the production db');
         console.log();
     });
 

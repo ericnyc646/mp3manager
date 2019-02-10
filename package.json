@@ -14,10 +14,10 @@
     "eslint-config-airbnb-base": "~12.0.1",
     "eslint-plugin-import": "~2.7.0",
     "eslint-plugin-jest": "~21.22.0",
-    "jest": "~23.6.0",
+    "jest": "~24.1.0",
     "jest-junit": "~5.1.0",
-    "regenerator-runtime": "~0.11.0",
-    "whatwg-fetch": "~2.0.3"
+    "regenerator-runtime": "~0.13.1",
+    "whatwg-fetch": "~3.0.0"
   },
   "author": "Christian Castelli <voodoo81people@gmail.com>",
   "homepage": "https://github.com/chrisvoo/mp3manager",
@@ -30,9 +30,9 @@
     "url": "https://github.com/chrisvoo/mp3manager/issues"
   },
   "dependencies": {
-    "colors": "^1.3.3",
-    "commander": "^2.19.0",
-    "mariadb": "^2.0.2-rc",
-    "underscore": "^1.9.1"
+    "colors": "~1.3.3",
+    "commander": "~2.19.0",
+    "mariadb": "~2.0.3",
+    "underscore": "~1.9.1"
   }
 }

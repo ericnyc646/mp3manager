@@ -73,16 +73,13 @@ class App {
         }
 
         const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
-        const {
-            socketPath,
-            database: musicDbName,
-        } = config.db;
+        const { socketPath } = config.db;
 
         return mariadb.createConnection({
             user: this.user,
             socketPath,
             password: this.password,
-            database: musicDbName,
+            // database: 'mysql',
         });
     }
 
