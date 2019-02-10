@@ -25,7 +25,7 @@ class App {
      */
     run() {
         try {
-            return this[`${this.command}`]();
+            return this[`${this.command}`]().then(() => this.end());
         } catch (e) {
             console.error(`Run failed for ${this.command}: ${e.message}`);
             return false;
@@ -161,7 +161,7 @@ class App {
      * Clear the resources
      */
     end() {
-        if (_.isEmpty(this.connection)) {
+        if (!_.isEmpty(this.connection)) {
             this.connection.end();
         }
     }

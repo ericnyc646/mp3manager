@@ -1,13 +1,13 @@
 {
   "name": "experiments",
   "version": "1.0.0",
-  "description": "",
+  "description": "Monorepo's root",
   "main": "index.js",
   "scripts": {
     "lerna": "lerna bootstrap --hoist",
     "test": "NODE_ENV=test jest --detectOpenHandles",
     "tree": "tree -I node_modules",
-    "startServer": "NODE_ENV=production ./node_modules/babel-cli/bin/babel-node.js --presets=env --trace-warnings packages/server/src/start.js"
+    "startServer": "NODE_ENV=production packages/server/src/start.js"
   },
   "devDependencies": {
     "eslint": "~4.16.0",

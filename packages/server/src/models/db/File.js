@@ -3,7 +3,7 @@ const fs = require('fs');
 const _ = require('underscore');
 const { Readable } = require('stream');
 const { promisify } = require('util');
-const getConnection = require('../../libs/getConnection');
+const { getConnection } = require('../../libs/pool');
 
 const getStats = promisify(fs.stat);
 /**

@@ -14,4 +14,5 @@ module.exports = {
     ],
     testEnvironment: 'node',
     globalSetup: join(ROOT, 'scripts/jest/setup.js'),
+    globalTeardown: join(ROOT, 'scripts/jest/teardown.js'),
 };
