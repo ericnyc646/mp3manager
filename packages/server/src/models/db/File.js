@@ -4,7 +4,6 @@ const _ = require('underscore');
 const { Readable } = require('stream');
 const { promisify } = require('util');
 const getConnection = require('../../libs/getConnection');
-const AcusticId = require('../../libs/AcusticId');
 
 const getStats = promisify(fs.stat);
 /**
@@ -51,12 +50,10 @@ class File {
 
         const result = await Promise.all([
             getFileHash('md5', stream),
-            AcusticId.getAcusticId(stream),
             getStats(path),
         ]);
-        const [md5_hash, acousticid_hash, stat] = result;
+        const [md5_hash, stat] = result;
         const { atime, mtime, size } = stat;
-        const { fingerprint } = acousticid_hash;
         const connection = await getConnection();
 
         if (_.isNull(connection)) {
@@ -68,12 +65,10 @@ class File {
                 {
                     namedPlaceholders: true,
                     sql: `INSERT INTO ${File.TABLE_NAME}
-                        (name, atime, mtime, size, path, acousticid_hash, md5_hash)
-                        VALUES (:name, :atime, :mtime, :size, :path,
-                                :fingerprint, :md5_hash)`,
+                        (name, atime, mtime, size, path, md5_hash)
+                        VALUES (:name, :atime, :mtime, :size, :path, :md5_hash)`,
                 },
-                { name, atime, mtime, size, path,
-                    fingerprint, md5_hash },
+                { name, atime, mtime, size, path, md5_hash },
             );
         } finally {
             connection.end();

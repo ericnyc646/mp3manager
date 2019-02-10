@@ -5,7 +5,6 @@ CREATE TABLE `file` (
     mtime DATETIME COMMENT 'Modification time',
     size INT COMMENT 'File size in bytes',
     path TEXT NOT NULL,
-    acousticid_hash TEXT COMMENT 'Calculated by fpcalc',
     md5_hash CHAR(32),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
