@@ -27,18 +27,16 @@ describe('File model', () => {
 
         /* SELECT WITHOUT CONDITIONS AND SORTING */
         res = await File.get({ fields: [
-            'id', 'name', 'atime', 'size',
-            'md5_hash', 'acousticid_hash',
+            'id', 'name', 'atime', 'size', 'md5_hash',
         ] });
 
         expect(res.length).toBe(1);
 
-        const { id, name, atime, size, md5_hash, acousticid_hash } = res[0];
+        const { id, name, atime, size, md5_hash } = res[0];
         expect(id).toBe(1);
         expect(name).toBe('A sample');
         expect(_.isNumber(size)).toBeTruthy();
         expect(_.isDate(atime)).toBeTruthy();
-        expect(!_.isEmpty(acousticid_hash)).toBeTruthy();
         expect(md5_hash).toEqual('057019f5a99230478b1498ab1d7d8894');
     }, 10000);
 });
