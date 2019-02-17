@@ -56,6 +56,21 @@ This will launch all the services through [PM2](https://pm2.io/doc/en/runtime/ov
 
 This service is responsible for scanning a list of paths, seaching recursively for all the MP3 files it can find. To do that, it makes use of [Bull](https://github.com/OptimalBits/bull), a queue manager which runs automatically a job for every directory it finds in the trees of the specified paths. The more CPUs your machine has, the faster it is, because every job is a spawned process and jobs' references are stored inside Redis.
 
-The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file. If an INSERT fails, we store the reference to it in a dedicated table, so that the user can decide which file to keep. This leads also to the conclusion that this is a destructive process: everytime we run it, the `file` table is emptied. This was decided to simplify the inner logic, otherwise after having inserted all the files the first time, it would have become difficult to understand if a failing INSERT would be due to the user having added a new file which is already present or if it was an old file already scanned and without duplicates.
+The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file. The MD5 is stored inside the ID3 Comment tag. This is the algorithm with pseudocode:
 
-The aforementioned paragraph leads to introducing a file watching process, to deal with user's modification directly in the file system.
+```
+  for every file "f":
+    - read comment metatag "c"
+    if c has MD5 hash:
+        if MD5(f) === c:
+            - continue;
+        else:
+            - store MD5(f) in comment tag
+            - read metadata "m"
+            - UPDATE m inside the database
+    else:
+        - INSERT f inside the DB
+        if the UNIQUE constraint fails:
+            - INSERT f inside the table file_duplicates
+```
+
