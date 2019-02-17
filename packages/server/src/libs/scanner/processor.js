@@ -22,29 +22,34 @@ module.exports = function musicQueue(job) {
     // so we resolve the error
     return new Promise(async (resolve) => {
         try {
-            const { directory } = job.data;
-            const stats = await stat(directory);
-            let resources = [];
+            const { resource } = job.data;
+            const stats = await stat(resource);
+            const response = {
+                musicFiles: [],
+                directories: [],
+            };
 
             if (stats.isFile()) {
-                if (isMp3(directory)) {
-                    resources.push(directory);
+                if (isMp3(resource)) {
+                    response.musicFiles.push(resource);
                 }
             } else if (stats.isDirectory()) {
-                const result = await readdir(directory);
-                resources = result
-                    .filter(async (file) => {
-                        const thePath = path.join(directory, file);
-                        if ((await stat(thePath)).isFile()) {
+                const result = await readdir(resource);
+                response.musicFiles = result
+                    .filter((file) => {
+                        const thePath = path.join(resource, file);
+
+                        if (fs.statSync(thePath).isFile()) {
                             return isMp3(thePath);
                         }
 
+                        response.directories.push(thePath);
                         return false;
                     })
-                    .map((file) => path.join(directory, file));
+                    .map((filePath) => path.join(resource, filePath));
             }
 
-            return resolve({ resources });
+            return resolve(response);
         } catch (e) {
             return resolve({
                 error: true,

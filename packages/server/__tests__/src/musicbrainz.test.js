@@ -1,5 +1,5 @@
 // const util = require('util');
-const MBClient = require('../../src/libs/MusicBrainz');
+const MBClient = require('../../src/libs/external_services/MusicBrainz');
 
 describe('MusicBrainz tests', () => {
     test('search: artist', async () => {

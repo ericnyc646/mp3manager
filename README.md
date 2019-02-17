@@ -3,18 +3,31 @@
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
 [![Build Status](https://travis-ci.com/chrisvoo/mp3manager.svg?branch=master)](https://travis-ci.com/chrisvoo/mp3manager)
 
-This project is intended to manage a large collection of MP3 files both from the browser and from a React Native app.
+__Table of contents__
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Description and usage](#description-and-usage)
+    * [Scanner](#scanner)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+This project is intended to manage a large collection of MP3 files both from the browser and from a React Native app. The browser version should do some privileged tasks like user management, absent from the mobile version which will focus more or listening to music.
 The interfaces should allow the user:
 
 - to listen to music, streamed by a server in the same LAN as the client (Web and mobile client)
 - to manage music files (delete them and edit their metatags)
 - display lyrics
 
-Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.org/) or [Discogs](https://www.discogs.com/).
+Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.org/) or [Discogs](https://www.discogs.com/). There are a couple of classes in the code which deals with their API, however due to the great amount of results they give, I've not found a way to use them to automatically edit music file. Probably this part could be done inside the browser, allowing the user to choose the appropriate result. 
+
+## Requirements
+- __Node.js 10.14.1+__: this is the LTS version I've used, but it should work with every version superior to 7.6, which supports `async/await` out of the box without requiring transpilation.
+- __MariaDB 10.3.12__: this is the database explicitly used, but it should seamlessly work with MySQL too.
+- __Redis__: at the moment it's just used by a task manager, Bull, used by the scanner
 
 ## Installation
 
-This is a monorepo which hosts all the parts of the architecture. you can manage Node.js dependencies with [Lerna](https://lernajs.io/). To start modifying this project, just do the following after having cloned this repo:
+This is a monorepo which hosts all the parts of the architecture. You can manage Node.js dependencies with [Lerna](https://lernajs.io/). To start modifying this project, just do the following after having cloned this repo:
 
 ```bash
 npm install --global lerna
@@ -37,4 +50,12 @@ npm install --global pm2
 pm2 start <ROOT_PROJECT_DIR>/scripts/ecosystem.config.js
 ```
 
-This will launch all the components of the backend through [PM2](https://pm2.io/doc/en/runtime/overview/) and will allow you to view the standard output/error with `pm2 log server` command.
+This will launch all the services through [PM2](https://pm2.io/doc/en/runtime/overview/) and will allow you to view the standard output/error with `pm2 log <package_name>` command.
+
+### Scanner
+
+This service is responsible for scanning a list of paths, seaching recursively for all the MP3 files it can find. To do that, it makes use of [Bull](https://github.com/OptimalBits/bull), a queue manager which runs automatically a job for every directory it finds in the trees of the specified paths. The more CPUs your machine has, the faster it is, because every job is a spawned process and jobs' references are stored inside Redis.
+
+The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file. If an INSERT fails, we store the reference to it in a dedicated table, so that the user can decide which file to keep. This leads also to the conclusion that this is a destructive process: everytime we run it, the `file` table is emptied. This was decided to simplify the inner logic, otherwise after having inserted all the files the first time, it would have become difficult to understand if a failing INSERT would be due to the user having added a new file which is already present or if it was an old file already scanned and without duplicates.
+
+The aforementioned paragraph leads to introducing a file watching process, to deal with user's modification directly in the file system.

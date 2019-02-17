@@ -32,7 +32,7 @@ function getFileHash(hashName, file) {
 }
 
 /**
- * It models the "file" table
+ * It models the "file" table.
  */
 class File {
     static get TABLE_NAME() {

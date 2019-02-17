@@ -4,34 +4,16 @@
  * https://github.com/SBoudrias/Inquirer.js#readme interactive CLI
  * https://github.com/ybootin/mp3gain.js#run-arguments
 
-## Using Lerna
- * https://blog.risingstack.com/node-js-project-structure-tutorial-node-js-at-scale/ Validation
-
 ## METATAGS
  * https://github.com/aadsm/jsmediatags: (412) Media Tags Reader (ID3, MP4, FLAC)
  * https://www.npmjs.com/package/browser-id3-writer (37): writing ID3 (v2.3) tag to MP3 (no read)
- * https://www.npmjs.com/package/tagio (6) TagLib wrapper for Node.JS (https://taglib.org/: library for reading/editing the meta-data of several audio formats.)
- * https://www.npmjs.com/package/music-metadata (2,375) Stream and file based music metadata parser for node.
- * https://www.npmjs.com/package/ffmetadata: (622) Read and write media metadata using ffmpeg's metadata framework.
- * https://github.com/vankasteelj/mediainfo-wrapper
- * https://github.com/voltraco/node-taglib2
- * https://www.npmjs.com/package/node-id3 (1252) node-id3 is a ID3-Tag library written in JavaScript without other dependencies.
- * https://github.com/Borewit/music-metadata-browser#readme reader
- * https://github.com/gnavalesi/music-tag: D3 reader and writer for NodeJS
 
-```javascript
- /* If the file doesn't have any metatags
-      query a web service with the filename
-    else
-      estimate reliability between metatag and filename
-      if value > positive %
-        if misssing tags
-          fill them from webservice
-      else
-        add to warn list */
-```
 
 ## External Web services
+
+### FREEDB and CDDB protocol
+* http://ftp.freedb.org/pub/freedb/latest/
+
 ### MusicBrainz
 https://musicbrainz.org/: has MusicBrainz Picard which makes use of AcoustID (audio identification service)
  * https://www.npmjs.com/package/fpcalc

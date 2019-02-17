@@ -10,12 +10,12 @@
     "startServer": "NODE_ENV=production packages/server/src/start.js"
   },
   "devDependencies": {
-    "eslint": "~4.16.0",
-    "eslint-config-airbnb-base": "~12.0.1",
-    "eslint-plugin-import": "~2.7.0",
-    "eslint-plugin-jest": "~21.22.0",
+    "eslint": "~5.13.0",
+    "eslint-config-airbnb-base": "~13.1.0",
+    "eslint-plugin-import": "~2.16.0",
+    "eslint-plugin-jest": "~22.2.2",
     "jest": "~24.1.0",
-    "jest-junit": "~5.1.0",
+    "jest-junit": "~6.2.1",
     "regenerator-runtime": "~0.13.1",
     "whatwg-fetch": "~3.0.0"
   },

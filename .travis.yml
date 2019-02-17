@@ -4,7 +4,9 @@ node_js:
   - "lts/*"
 cache: npm
 before_install:
-  - sudo apt-get install -y libchromaprint-tools
+  - sudo apt-get install -y libchromaprint-tools eyeD3
+services:
+  - redis-server
 addons:
   apt:
     update: true

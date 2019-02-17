@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const fileType = require('file-type');
 const isMp3 = require('../../src/libs/scanner/ismp3');
 const MusicScanner = require('../../src/libs/scanner');
@@ -14,22 +15,27 @@ describe('Music scanner functions', () => {
         expect(isMp3(buffer)).toBeTruthy();
     });
 
-/*     test('scanner', async () => {
-        console.time('musicScanWithQueue');
-
-        const paths = [
-            '/home/ccastelli/Music/3) DA ASCOLTARE/ALTER BRIDGE - DISCOGRAPHY (2004-13) [CHANNELNEO]',
-            '/home/ccastelli/Music/3) DA ASCOLTARE/ZZ Top - Discography (1970-2012)',
-            '/home/ccastelli/Music/3) DA ASCOLTARE/ZZ Top - Discography (1970-2012)/OK',
-            '/home/ccastelli/Music/3) DA ASCOLTARE/Portishead',
-            '/home/ccastelli/Music/3) DA ASCOLTARE/Subsonica',
-            '/home/ccastelli/Music/3) DA ASCOLTARE/Subsonica/Terrestre',
-        ];
-
+    test('scanner', async () => {
         const scanner = new MusicScanner({
-            paths,
+            paths: [resDir],
+            keepInMemory: true,
         });
         const res = await scanner.scan();
-        console.log(res);
-    }, 40000); */
+        const { jobsCompleted, totalFiles, errors, musicFiles } = res;
+        expect(jobsCompleted).toBe(6); // 6 directories
+        expect(totalFiles).toBe(6);
+        expect(errors.length).toBe(0);
+
+        const musicFilesBasenames = musicFiles.map((file) => path.basename(file));
+        const expectedArrayResult = [
+            'Under The Ice (Scene edit).mp3',
+            'sample.mp3',
+            '1.1.mp3',
+            '1.1.1.mp3',
+            '3.1.mp3',
+            '1.2.mp3',
+        ];
+        expect(musicFilesBasenames.sort().every((value, index) =>
+            value === expectedArrayResult.sort()[index])).toBeTruthy();
+    });
 });
