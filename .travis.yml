@@ -5,6 +5,7 @@ node_js:
 cache: npm
 before_install:
   - sudo apt-get install -y libchromaprint-tools eyed3
+  - gcc -o external/mp3hash/mp3hash external/mp3hash/mp3hash.c external/mp3hash/md5/md5.c
 services:
   - redis-server
 addons:
