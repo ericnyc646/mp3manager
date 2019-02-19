@@ -1,6 +1,7 @@
 const mm = require('music-metadata');
 const _ = require('underscore');
 const EyeD3 = require('../../src/libs/eyeD3');
+const { mp3hash } = require('../../src/libs/utils');
 
 describe('ID3 Tags', () => {
     test('Read metadata', async () => {
@@ -43,7 +44,14 @@ describe('ID3 Tags', () => {
 
     test('Write metadata', async () => {
         const version = await EyeD3.version();
-        console.log(version);
+        console.log(version); // 0.6 on Trusty, 0.8 on Xenial
         expect(!_.isNull(version)).toBeTruthy();
+    });
+
+    fit('MD5 without metadata', async () => {
+        const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
+        const resFile = `${resDir}/Under The Ice (Scene edit).mp3`;
+        const md5 = await mp3hash(resFile);
+        expect(md5).toEqual('79b9629de784c871fdb938bd5a5549c8');
     });
 });

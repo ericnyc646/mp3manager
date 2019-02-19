@@ -3,6 +3,7 @@
 ## UTILS
  * https://github.com/SBoudrias/Inquirer.js#readme interactive CLI
  * https://github.com/ybootin/mp3gain.js#run-arguments
+ * https://www.npmjs.com/package/node-watch
 
 ## METATAGS
  * https://github.com/aadsm/jsmediatags: (412) Media Tags Reader (ID3, MP4, FLAC)

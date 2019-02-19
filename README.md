@@ -56,7 +56,7 @@ This will launch all the services through [PM2](https://pm2.io/doc/en/runtime/ov
 
 This service is responsible for scanning a list of paths, seaching recursively for all the MP3 files it can find. To do that, it makes use of [Bull](https://github.com/OptimalBits/bull), a queue manager which runs automatically a job for every directory it finds in the trees of the specified paths. The more CPUs your machine has, the faster it is, because every job is a spawned process and jobs' references are stored inside Redis.
 
-The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file. The MD5 is stored inside the ID3 Comment tag. This is the algorithm with pseudocode:
+The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file without considering its metadata (ID3). The MD5 is stored inside the ID3 Comment tag. This is the algorithm with pseudocode:
 
 ```
   for every file "f":
@@ -74,3 +74,13 @@ The database structure doesn't allow duplicates. The uniqueness is just given by
             - INSERT f inside the table file_duplicates
 ```
 
+In order to calculate the MD5 just on the data without considering the metadata, I use a C program called [mp3hash](https://github.com/sptim/mp3hash). This program is imported as a GIT submodule in this repo under the directory `external/mp3hash`. Do the following to obtain the executable:
+
+```
+cd external
+git submodule init
+git submodule update --remote
+gcc -o mp3hash mp3hash.c md5/md5.c
+```
+
+If everything worked fine, you should see a `mp3hash` executable.

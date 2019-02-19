@@ -1,6 +1,10 @@
 const util = require('util');
+const path = require('path');
 const _ = require('underscore');
-const execFile = util.promisify(require('child_process').execFile);
+const cp = require('child_process');
+
+const execFile = util.promisify(cp.execFile);
+const exec = util.promisify(cp.exec);
 
 /**
  * Executes an external program passing some arguments to it
@@ -35,7 +39,23 @@ function inspect(obj) {
     }));
 }
 
+/**
+ * It calculates the MD5 of the music file, ignoring the metadata
+ * @param {string} filePath absolute path of the music file
+ */
+async function mp3hash(filePath) {
+    const exePath = path.join(__dirname, '../../../../external/mp3hash/mp3hash');
+    const musicFile = `"${filePath.replace(/("+)/g, '\\$1')}"`;
+    const { stdout, stderr } = await exec(`${exePath} ${musicFile}`);
+
+    if (!_.isEmpty(stderr)) {
+        throw new Error(stderr);
+    }
+    return stdout.split(' ')[0];
+}
+
 module.exports = {
     inspect,
     execute,
+    mp3hash,
 };
