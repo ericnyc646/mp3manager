@@ -1,13 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const fileType = require('file-type');
+const _ = require('underscore');
+const mm = require('music-metadata');
+const EyeD3 = require('../../src/libs/eyeD3');
 const isMp3 = require('../../src/libs/scanner/ismp3');
 const MusicScanner = require('../../src/libs/scanner');
+const { copyFile } = require('../libs/testUtils');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
 describe('Music scanner functions', () => {
-    test('isMp3: it can both read strings and buffers', () => {
+    it('it can both read strings and buffers', () => {
         expect(isMp3(`${resDir}/fake.mp3`)).toBeFalsy(); // text file with wrong extension
 
         const buffer = fs.readFileSync(`${resDir}/sample.mp3`);
@@ -15,7 +19,28 @@ describe('Music scanner functions', () => {
         expect(isMp3(buffer)).toBeTruthy();
     });
 
-    test('scanner', async () => {
+    it('can mark files as scanned', async () => {
+        const version = await EyeD3.version();
+        // console.log(version); // 0.6 on Trusty, 0.8 on Xenial
+        expect(!_.isNull(version)).toBeTruthy();
+
+        // prepare test directory
+        const { mainFolder, files } = copyFile({
+            filePath: `${resDir}/Under The Ice (Scene edit).mp3`,
+        });
+
+        const newFileCopied = `${mainFolder}/${files[0]}`;
+        expect(isMp3(newFileCopied)).toBeTruthy();
+
+        const out = await EyeD3.markFileAsScanned(newFileCopied);
+        expect(!_.isEmpty(out)).toBeTruthy();
+
+        const { common: { comment } } = await mm.parseFile(newFileCopied);
+        expect(comment.length).toBe(1);
+        expect(comment[0].startsWith('MusicManager')).toBeTruthy();
+    });
+
+    it('can scan directories recursively', async () => {
         const scanner = new MusicScanner({
             paths: [resDir],
             keepInMemory: true,

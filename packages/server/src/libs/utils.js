@@ -40,6 +40,19 @@ function inspect(obj) {
 }
 
 /**
+ * Escapes all quotes chars and wrap the path between quotes. This is useful only
+ * when using child_process' functions to pass paths as arguments
+ * @param {string} path the file's path
+ */
+function safePath(filePath) {
+    if (_.isEmpty(filePath)) {
+        return '';
+    }
+
+    return `"${filePath.replace(/("+)/g, '\\$1')}"`;
+}
+
+/**
  * It calculates the MD5 of the music file, ignoring the metadata
  * @param {string} filePath absolute path of the music file
  */
@@ -58,4 +71,5 @@ module.exports = {
     inspect,
     execute,
     mp3hash,
+    safePath,
 };

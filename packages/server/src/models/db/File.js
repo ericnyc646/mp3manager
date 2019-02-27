@@ -1,42 +1,71 @@
-const crypto = require('crypto');
 const fs = require('fs');
 const _ = require('underscore');
-const { Readable } = require('stream');
 const { promisify } = require('util');
 const { getConnection } = require('../../libs/pool');
+const { scanner: { batchSize } } = require('../../config/getConfig');
+const { mp3hash } = require('../../libs/utils');
+const DbModel = require('./DbModel');
 
 const getStats = promisify(fs.stat);
-/**
- * It calculates the hash of a file
- * @param {string} hashName type of hash (md5, sha1, etc)
- * @param {string|Stream} file a file's path or a readable stream
- * if it's been already opened somewhere else
- */
-function getFileHash(hashName, file) {
-    return new Promise((resolve, reject) => {
-        const hash = crypto.createHash(hashName);
-        let stream;
-
-        if (typeof file === 'string') {
-            stream = fs.createReadStream(file);
-        } else if (file instanceof Readable) {
-            stream = file;
-        } else {
-            throw new Error('Second argument must be a string or a readable stream');
-        }
-
-        stream.on('error', (err) => reject(err));
-        stream.on('data', (chunk) => hash.update(chunk));
-        stream.on('end', () => resolve(hash.digest('hex')));
-    });
-}
 
 /**
  * It models the "file" table.
  */
-class File {
+class File extends DbModel {
     static get TABLE_NAME() {
         return 'file';
+    }
+
+    /**
+     * Inserts multiple files at once
+     * @param {Array} files Array of objects which each of them represents a file
+     * @returns {Number} the number of affected rows
+     */
+    static async batchInsert(files) {
+        const connection = await getConnection();
+
+        if (_.isNull(connection)) {
+            return {};
+        }
+
+        const batchSql = {
+            namedPlaceholders: true,
+            sql: `INSERT INTO ${File.TABLE_NAME}
+                   (name, atime, mtime, size, path, md5_hash)
+                  VALUES (:name, :atime, :mtime, :size, :path, :md5_hash)`,
+        };
+        let values = [];
+        const promises = [];
+
+        for (const file of files) {
+            if (values.length === batchSize) {
+                // no nested object so it results in a deep copy
+                const sqlValues = Object.assign([], values);
+                promises.push(connection.batch(batchSql, sqlValues));
+                values = [];
+            }
+
+            const { name, path } = file;
+            // eslint-disable-next-line
+            const result = await Promise.all([
+                mp3hash(path),
+                getStats(path),
+            ]);
+            const [md5_hash, stat] = result;
+            const { atime, mtime, size } = stat;
+
+            values.push({
+                name, atime, mtime, size, path, md5_hash,
+            });
+        }
+
+        if (!_.isEmpty(values)) {
+            promises.push(connection.batch(batchSql, values));
+        }
+
+        const res = await Promise.all(promises);
+        return res.reduce((accumulator, currentValue) => 
+            accumulator + currentValue.affectedRows, 0);
     }
 
     /**
@@ -45,11 +74,8 @@ class File {
      */
     static async insert(params) {
         const { name, path } = params;
-
-        const stream = fs.createReadStream(path);
-
         const result = await Promise.all([
-            getFileHash('md5', stream),
+            mp3hash(path),
             getStats(path),
         ]);
         const [md5_hash, stat] = result;
@@ -101,9 +127,9 @@ class File {
      * It retrieves music file
      * @param {Object} params can contains many fields:
      * `fields` as array or string, like `id, name` or `[id, name]`, default `*`
-     * `conditions` must be a string, default `1=1`
-     * `pagination` an object with `limit` and `offset`
-     * `sorting` has a `column` and `direction` fields
+     * `conditions` must be a string (optional)
+     * `pagination` an object with `limit` and `offset` (optional)
+     * `sorting` has a `column` and `direction` fields (optional)
      */
     static async get(params) {
         let chosenFields = '*';
@@ -111,14 +137,14 @@ class File {
         let chosenLimit;
         let chosenSorting;
 
-        const { fields, conditions, namedPlaceholders, pagination, sorting } = params;
+        const { fields, where, namedPlaceholders, pagination, sorting } = params;
 
         if (!_.isEmpty(fields)) {
             chosenFields = _.isArray(fields) ? fields.join(',') : fields;
         }
 
-        if (!_.isEmpty(conditions) && _.isString(conditions)) {
-            chosenConditions = conditions;
+        if (!_.isEmpty(where) && _.isString(where)) {
+            chosenConditions = where;
         }
 
         if (!_.isEmpty(sorting)) {
@@ -129,7 +155,7 @@ class File {
             }
 
             if (!_.isEmpty(direction) && !_.isEmpty(column)) {
-                chosenSorting += ` ${direction}`;
+                chosenSorting += ` ORDER BY ${direction}`;
             }
         }
 
@@ -155,7 +181,7 @@ class File {
 
         let sql = `SELECT ${chosenFields} FROM ${File.TABLE_NAME} `;
         if (!_.isEmpty(chosenConditions)) {
-            sql += chosenConditions;
+            sql += ` WHERE ${chosenConditions}`;
         }
 
         if (!_.isEmpty(chosenSorting)) {
@@ -180,7 +206,4 @@ class File {
     }
 }
 
-module.exports = {
-    getFileHash,
-    File,
-};
+module.exports = File;

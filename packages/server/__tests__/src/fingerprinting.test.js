@@ -5,7 +5,7 @@ const AcusticId = require('../../src/libs/external_services/AcusticId');
 
 
 describe('Music fingerprinting functions', () => {
-    test('getAcusticId', async () => {
+    it('can get acoustic id info', async () => {
         const musicPath = path.join(__dirname, '../resources/Under The Ice (Scene edit).mp3');
         expect(fs.existsSync(musicPath)).toBeTruthy();
 
@@ -20,7 +20,7 @@ describe('Music fingerprinting functions', () => {
         ).toBeTruthy();
     }, 10000);
 
-    test('AcusticId class', async () => {
+    it('can lookup fingerprints', async () => {
         const AId = new AcusticId('FCDadKOJ5f');
 
         // eslint-disable-next-line

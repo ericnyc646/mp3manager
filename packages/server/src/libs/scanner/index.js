@@ -2,6 +2,9 @@ const Queue = require('bull');
 const os = require('os');
 const path = require('path');
 const _ = require('underscore');
+const mm = require('music-metadata');
+const File = require('../../models/db/File');
+const EyeD3 = require('../eyeD3');
 const config = require('../../config/getConfig');
 
 class MusicScanner {
@@ -14,8 +17,8 @@ class MusicScanner {
             returning the results (just for tests, sort of dry run)
      */
     constructor(options) {
-        if (_.isEmpty(options) || _.isEmpty(options.paths)) {
-            throw new Error('You must specify the `paths` property');
+        if (_.isEmpty(options) || _.isEmpty(options.paths) || !_.isArray(options.paths)) {
+            throw new Error('You must specify the `paths` property (array)');
         }
 
         const { paths, workers, queueName, keepInMemory } = options;
@@ -56,6 +59,20 @@ class MusicScanner {
     }
 
     /**
+     * It checks if a file has already been scanned in the past by looking
+     * the comment ID3 metatag
+     * @param {string} filePath file's absolute path
+     */
+    static async isFileTagged(filePath) {
+        const { common: { comment } } = await mm.parseFile(filePath);
+        return comment.some((item) => item.startsWith('MusicManager'));
+    }
+
+    async storeFiles(files = []) {
+        
+    }
+
+    /**
      * Main method, in which a worker is dedicated to one directory at a time.
      * The worker (processor.js) returns a list of music files and directories found.
      * For every directory found by every worker, a new job is added to the queue
@@ -73,14 +90,17 @@ class MusicScanner {
 
                     if (this.keepInMemory) {
                         result.musicFiles.forEach((element) => this.totalMusicFiles.push(element));
+                    } else {
+                        this.storeFiles(result.musicFiles);
                     }
 
                     for (const resource of result.directories) {
                         this.totalJobs += 1;
                         this.queue.add({ resource });
                     }
-                    this.isFinished(resolve);
                 }
+
+                this.isFinished(resolve);
             });
 
             this.queue.on('error', (error) => {

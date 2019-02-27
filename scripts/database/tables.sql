@@ -5,12 +5,55 @@ CREATE TABLE `file` (
     mtime DATETIME COMMENT 'Modification time',
     size INT COMMENT 'File size in bytes',
     path TEXT NOT NULL,
-    md5_hash CHAR(32),
+    md5_hash CHAR(32) COMMENT 'MD5 without including metadata',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE KEY md5_hash_uq(md5_hash)
 ) ENGINE = InnoDB, COMMENT = 'Music files';
 
+CREATE TABLE `file_metadata` (
+    id SERIAL,
+    md5_hash CHAR(32) COMMENT 'MD5 without including metadata',
+    bitrate SMALLINT UNSIGNED COMMENT 'Expressd in Kbit',
+    sample_rate SMALLINT UNSIGNED COMMENT 'Express in Hz',
+    number_of_channels TINYINT UNSIGNED,
+    codec_profile TEXT,
+    encoder TEXT,
+    duration SMALLINT UNSIGNED COMMENT 'Expressed in seconds',
+    acoustid_id CHAR(36),
+    album TEXT,
+    artist TEXT,
+    `date` DATE,
+    genre TEXT COMMENT 'Separated by comma',
+    isrc CHAR(12) COMMENT 'International Standard Recording Code',
+    label TEXT COMMENT 'Separated by comma',
+    language TEXT COMMENT 'Separated by comma',
+    lyricist TEXT COMMENT 'Separated by comma',
+    media TEXT,
+    musicbrainz_workid CHAR(36),
+    musicbrainz_albumid CHAR(36),
+    musicbrainz_recordingid CHAR(36),
+    musicbrainz_artistid CHAR(36),
+    musicbrainz_albumartistid CHAR(36),
+    musicbrainz_releasegroupid CHAR(36),
+    musicbrainz_trackid CHAR(36),
+    originaldate DATE,
+    originalyear SMALLINT UNSIGNED,
+    has_picture BOOLEAN,
+    releasecountry CHAR(2),
+    title TEXT,
+    track TEXT,
+    writer TEXT COMMENT 'Separated by comma',
+    year SMALLINT UNSIGNED,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY file_md5_fk(md5_hash) 
+        REFERENCES file(md5_hash)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY md5_hash_meta_uq(md5_hash)
+) ENGINE = InnoDB, COMMENT = 'Metadata parsed by music-metadata';
 
 CREATE TABLE `band` (
     id SERIAL,

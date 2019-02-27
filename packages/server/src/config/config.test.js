@@ -7,6 +7,10 @@ module.exports = {
         url: 'http://localhost',
         webSocketPort: 4668,
     },
+    scanner: {
+        removeAllComments: true, // if to leave or not just MusicManager comment
+        batchSize: 2, // how many values to batch insert
+    },
     apiIntegration: { // shared properties between integrations
         userAgent: 'mp3manager/voodoo81people@gmail.com',
     },

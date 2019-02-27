@@ -1,5 +1,6 @@
 const _ = require('underscore');
 const { execute } = require('./utils');
+const { scanner } = require('../config/getConfig');
 
 class EyeD3 {
     static isError(stderr, error) {
@@ -19,6 +20,13 @@ class EyeD3 {
 
         console.error(err);
         return true;
+    }
+
+    /**
+     * Comment tag used by the scanner to makr a file as scanned
+     */
+    static get TAG() {
+        return 'MusicManager';
     }
 
     /**
@@ -48,6 +56,33 @@ class EyeD3 {
      */
     static async removeAllTags(filePath) {
         return this.run(['--remove-all', filePath]);
+    }
+
+    /**
+     * Used to mark the file as scanner. It may optionally remove
+     * all other comments (default true)
+     * @param {string} filePath file's absolute path
+     */
+    static markFileAsScanned(filePath) {
+        const description = EyeD3.TAG;
+        const comment = `${description}-${Date.now()}`; // the only part visible to music-metadata
+        const lang = 'eng';
+        // description and lang are unique among comments. If there's already
+        // another comment with the same values, it gets overwritten.
+        const finalComment = `${comment}:${description}:${lang}`;
+        
+        const args = [];
+        const { removeAllComments } = scanner;
+
+        if (removeAllComments) {
+            args.push('--remove-all-comments');
+        }
+
+        args.push('--add-comment');
+        args.push(finalComment);
+        args.push(filePath);
+        
+        return this.run(args);
     }
 }
 

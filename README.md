@@ -70,6 +70,7 @@ The database structure doesn't allow duplicates. The uniqueness is just given by
             - UPDATE m inside the database
     else:
         - INSERT f inside the DB
+        - UPSERT m inside the DB
         if the UNIQUE constraint fails:
             - INSERT f inside the table file_duplicates
 ```
@@ -77,9 +78,9 @@ The database structure doesn't allow duplicates. The uniqueness is just given by
 In order to calculate the MD5 just on the data without considering the metadata, I use a C program called [mp3hash](https://github.com/sptim/mp3hash). This program is imported as a GIT submodule in this repo under the directory `external/mp3hash`. Do the following to obtain the executable:
 
 ```
-cd external
 git submodule init
 git submodule update --remote
+cd external/mp3hash
 gcc -o mp3hash mp3hash.c md5/md5.c
 ```
 

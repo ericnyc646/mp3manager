@@ -17,6 +17,7 @@
         ],
         "object-property-newline": 0,
         "global-require": 0,
+        "no-trailing-spaces": 0,
         "camelcase": 0,
         "import/prefer-default-export": 0,
         "import/no-dynamic-require": 0,

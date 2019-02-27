@@ -2,7 +2,7 @@
 const MBClient = require('../../src/libs/external_services/MusicBrainz');
 
 describe('MusicBrainz tests', () => {
-    test('search: artist', async () => {
+    it('can search by artist', async () => {
         const client = new MBClient();
         const resp = await client.search('artist', { artist: 'pink floyd' });
 
@@ -33,7 +33,7 @@ describe('MusicBrainz tests', () => {
         // console.log(util.inspect(group, { showHidden: false, depth: null }));
     });
 
-    test('search: release', async () => {
+    it('can search by release', async () => {
         const client = new MBClient();
         // normal search
         const resp = await client.search('release', { arid: '83d91898-7763-47d7-b03b-b92132375c47' });
@@ -43,7 +43,7 @@ describe('MusicBrainz tests', () => {
         // console.log(util.inspect(resp, { showHidden: false, depth: null }));
     });
 
-    test('search: release-group', async () => {
+    it('can search by release-group', async () => {
         const client = new MBClient();
         // lucene search, I want all Pink Floyd's albums, whose types are not live, compilation, etc
         const resp = await client.search('release-group', {
