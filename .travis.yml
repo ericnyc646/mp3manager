@@ -8,7 +8,7 @@ before_install:
   - gcc -o external/mp3hash/mp3hash external/mp3hash/mp3hash.c external/mp3hash/md5/md5.c
   - wget http://eyed3.nicfit.net/releases/eyeD3-0.8.9.tar.gz
   - tar xzf eyeD3-0.8.9.tar.gz
-  - cd eyeD3-0.8.9 && sudo python setup.py install
+  - cd eyeD3-0.8.9 && sudo python setup.py install && rm -rf eyeD3-0.8.9*
 services:
   - redis-server
 addons:
