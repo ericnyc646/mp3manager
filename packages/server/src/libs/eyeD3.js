@@ -40,12 +40,12 @@ class EyeD3 {
      * @returns {Promise} null if an error happens, default stderr otherwise
      */
     static async run(args) {
-        const { stderr, error } = await execute('eyeD3', args);
+        const { stderr, stdout, error } = await execute('eyeD3', args);
         if (this.isError(stderr, error)) {
             return null;
         }
 
-        return stderr;
+        return stdout;
     }
 
     /**
