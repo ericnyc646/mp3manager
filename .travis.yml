@@ -8,7 +8,7 @@ before_install:
   - gcc -o external/mp3hash/mp3hash external/mp3hash/mp3hash.c external/mp3hash/md5/md5.c
   - wget http://eyed3.nicfit.net/releases/eyeD3-0.8.9.tar.gz -O /tmp/eyeD3-0.8.9.tar.gz
   - tar xzf /tmp/eyeD3-0.8.9.tar.gz -C /tmp
-  - cd /tmp/eyeD3-0.8.9 && sudo -H /root python setup.py install
+  - cd /tmp/eyeD3-0.8.9 && sudo python setup.py install
   - cd /home/travis/build/chrisvoo/mp3manager
 services:
   - redis-server
