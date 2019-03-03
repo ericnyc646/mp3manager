@@ -18,8 +18,13 @@ class EyeD3 {
             return true;
         }
 
-        console.error(err);
-        return true;
+        // generic error
+        if (err.includes('error')) {
+            console.error(err);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -32,22 +37,22 @@ class EyeD3 {
     /**
      * Global method to run eyeD3
      * @param {Array|string} args arguments to be passed to eyeD3
-     * @returns {Promise} null if an error happens, default stdout otherwise
+     * @returns {Promise} null if an error happens, default stderr otherwise
      */
     static async run(args) {
-        const { stdout, stderr, error } = await execute('eyeD3', args);
+        const { stderr, error } = await execute('eyeD3', args);
         if (this.isError(stderr, error)) {
             return null;
         }
 
-        return stdout;
+        return stderr;
     }
 
     /**
      * Returns the eyeD3 version
      */
     static async version() {
-        return this.run('--version');
+        return this.run('--version').then((result) => result.trim());
     }
 
     /**

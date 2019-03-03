@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const fileType = require('file-type');
-const _ = require('underscore');
 const mm = require('music-metadata');
 const EyeD3 = require('../../src/libs/eyeD3');
 const isMp3 = require('../../src/libs/scanner/ismp3');
@@ -21,8 +20,7 @@ describe('Music scanner functions', () => {
 
     it('can mark files as scanned', async () => {
         const version = await EyeD3.version();
-        // console.log(version); // 0.6 on Trusty, 0.8 on Xenial
-        expect(!_.isNull(version)).toBeTruthy();
+        expect(version).toEqual('0.8.9');
 
         // prepare test directory
         const { mainFolder, files } = copyFile({
@@ -32,13 +30,12 @@ describe('Music scanner functions', () => {
         const newFileCopied = `${mainFolder}/${files[0]}`;
         expect(isMp3(newFileCopied)).toBeTruthy();
 
-        const out = await EyeD3.markFileAsScanned(newFileCopied);
-        expect(!_.isEmpty(out)).toBeTruthy();
+        await EyeD3.markFileAsScanned(newFileCopied);
 
         const { common: { comment } } = await mm.parseFile(newFileCopied);
         expect(comment.length).toBe(1);
         expect(comment[0].startsWith('MusicManager')).toBeTruthy();
-    });
+    }, 50000);
 
     it('can scan directories recursively', async () => {
         const scanner = new MusicScanner({
