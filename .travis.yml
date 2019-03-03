@@ -6,13 +6,10 @@ python: 3.6
 cache: npm
 before_install:
   - sudo apt-get install -y libchromaprint-tools python3-setuptools python3-pip
-  - sudo pip3 install python-magic pathlib
+  - sudo pip3 install python-magic pathlib eyeD3
   - sudo pip install --upgrade pip
   - gcc -o external/mp3hash/mp3hash external/mp3hash/mp3hash.c external/mp3hash/md5/md5.c
-  - wget http://eyed3.nicfit.net/releases/eyeD3-0.8.9.tar.gz -O /tmp/eyeD3-0.8.9.tar.gz
-  - tar xzf /tmp/eyeD3-0.8.9.tar.gz -C /tmp
-  - cd /tmp/eyeD3-0.8.9 && sudo python3 setup.py install
-  - cd /home/travis/build/chrisvoo/mp3manager
+  - eyeD3 --version
 services:
   - redis-server
 addons:
