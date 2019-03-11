@@ -1,10 +1,14 @@
-const DbModel = require('../../../src/models/db/DbModel');
-const { NoTableName, OkClass } = require('./fakeClasses');
+const { NoTableName, OkClass, Fields } = require('./classes');
 
 describe('Inheritance tests', () => {
-    it('verifies that a DbModel instance cannot be created', () => {
-        expect(() => new DbModel()).toThrowError(/Cannot construct DbModel/);
-        expect(() => new NoTableName()).toThrowError(/You must implement/);
-        expect(() => new OkClass()).not.toThrow();
+    it('verifies that the static methods are correctly working', () => {
+        expect(() => NoTableName.getFields()).toThrowError(/You must implement/);
+        expect(() => OkClass.getFields()).not.toThrow();
+
+        expect(OkClass.getFields()).toEqual('d,e,f');
+        expect(Fields.getFields()).toEqual('a,b,c');
+        expect(Fields.getPlaceholders()).toEqual(':a,:b,:c');
+        expect(Fields.getPlaceholders({ forUpdate: true })).toEqual('a=:a,b=:b,c=:c');
+        expect(Fields.getValuesExpressions()).toEqual('a=VALUES(a),b=VALUES(b),c=VALUES(c)');
     });
 });

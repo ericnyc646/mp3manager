@@ -10,9 +10,6 @@ describe('File model', () => {
         const mp3 = {
             name: 'A sample',
             path: filePath,
-            bitrate: 320,
-            genre: 'pop',
-            rating: 2,
         };
         /* INSERT */
         let res = await File.insert(mp3);

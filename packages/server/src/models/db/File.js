@@ -16,6 +16,12 @@ class File extends DbModel {
         return 'file';
     }
 
+    static get FIELDS() {
+        return [
+            'name', 'atime', 'mtime', 'size', 'path', 'md5_hash',
+        ];
+    }
+
     /**
      * Inserts multiple files at once
      * @param {Array} files Array of objects which each of them represents a file
@@ -31,8 +37,8 @@ class File extends DbModel {
         const batchSql = {
             namedPlaceholders: true,
             sql: `INSERT INTO ${File.TABLE_NAME}
-                   (name, atime, mtime, size, path, md5_hash)
-                  VALUES (:name, :atime, :mtime, :size, :path, :md5_hash)`,
+                   (${this.getFields()})
+                  VALUES (${this.getPlaceholders()})`,
         };
         let values = [];
         const promises = [];
@@ -91,8 +97,8 @@ class File extends DbModel {
                 {
                     namedPlaceholders: true,
                     sql: `INSERT INTO ${File.TABLE_NAME}
-                        (name, atime, mtime, size, path, md5_hash)
-                        VALUES (:name, :atime, :mtime, :size, :path, :md5_hash)`,
+                            (${this.getFields()})
+                          VALUES (${this.getPlaceholders()})`,
                 },
                 { name, atime, mtime, size, path, md5_hash },
             );

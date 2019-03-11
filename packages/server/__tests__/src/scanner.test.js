@@ -20,7 +20,7 @@ describe('Music scanner functions', () => {
 
     it('can mark files as scanned', async () => {
         const version = await EyeD3.version();
-        expect(version).toEqual('0.8.9');
+        expect(version.startsWith('0.8')).toBeTruthy();
 
         // prepare test directory
         const { mainFolder, files } = copyFile({
