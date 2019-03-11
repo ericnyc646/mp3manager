@@ -15,7 +15,7 @@ describe('File model', () => {
         let res = await File.insert(mp3);
         const { affectedRows, insertId, warningStatus } = res;
         expect(affectedRows).toEqual(1);
-        expect(insertId).toEqual(1);
+        expect(_.isNumber(insertId)).toBeTruthy(); // other files are inserted for other tests
         expect(warningStatus).toEqual(0);
 
         /* SELECT WITHOUT CONDITIONS AND SORTING */
