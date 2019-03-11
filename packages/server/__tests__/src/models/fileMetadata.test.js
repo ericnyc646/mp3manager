@@ -22,7 +22,7 @@ describe('FileMetadata model', () => {
         const res = await File.insert(mp3);
         const { affectedRows, insertId, warningStatus } = res;
         expect(affectedRows).toEqual(1);
-        expect(insertId).toEqual(1);
+        expect(_.isNumber(insertId)).toBeTruthy(); // other files may be inserted for other tests
         expect(warningStatus).toEqual(0);
 
         const insertedFile = await File.get({ fields: 'md5_hash', where: `id = ${insertId}` });
