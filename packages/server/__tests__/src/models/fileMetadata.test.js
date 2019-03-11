@@ -1,4 +1,5 @@
 const path = require('path');
+const _ = require('underscore');
 const FileMetadata = require('../../../src/models/db/FileMetadata');
 const File = require('../../../src/models/db/File');
 const { copyFile } = require('../../libs/testUtils');
