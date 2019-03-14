@@ -34,7 +34,10 @@ describe('Music scanner functions', () => {
 
         const { common: { comment } } = await mm.parseFile(newFileCopied);
         expect(comment.length).toBe(1);
-        expect(comment[0].startsWith('MusicManager')).toBeTruthy();
+        const parts = comment[0].split('-');
+        expect(parts[0]).toEqual('MusicManager');
+        expect(parts[1].length).toBe(32);
+        expect(parts[2].length).toBe(13);
     }, 50000);
 
     it('can scan directories recursively', async () => {

@@ -22,18 +22,10 @@ class FileMetadata extends DbModel {
     }
 
     /**
-     * Insert a subset of all the metadata found for a file or
-     * update them if the MD5 is already present in the table
+     * Get a subset of all the metatag and file's info
      * @param {string} filePath file's absolute path
-     * @param {string} md5hash file's MD5 without considering its metadata
      */
-    static async upsert(filePath, md5hash) {
-        const connection = await getConnection();
-
-        if (_.isNull(connection)) {
-            return {};
-        }
-
+    static async getMetadata(filePath) {
         const metadata = await mm.parseFile(filePath, { duration: true });
         const { format, common } = metadata;
         const { sampleRate: sample_rate, numberOfChannels: number_of_channels,
@@ -69,8 +61,31 @@ class FileMetadata extends DbModel {
 
         const has_picture = !_.isEmpty(picture);
 
+        return {
+            bitrate, sample_rate, number_of_channels, codec_profile, encoder,
+            duration, acoustid_id, comment, album, artist, date: theDate,
+            genre, isrc, label, language, lyricist, media, musicbrainz_workid,
+            musicbrainz_albumid, musicbrainz_recordingid, musicbrainz_artistid,
+            musicbrainz_albumartistid, musicbrainz_releasegroupid, musicbrainz_trackid,
+            originaldate, originalyear, has_picture, releasecountry, title, track: theTrack,
+            writer, year,
+        };
+    }
+
+    /**
+     * Insert a subset of all the metadata found for a file or
+     * update them if the MD5 is already present in the table
+     * @param {string} filePath file's absolute path
+     * @param {string} md5hash file's MD5 without considering its metadata
+     */
+    static async upsert(filePath, md5hash) {
+        const connection = await getConnection();
+
+        const metadata = await this.getMetadata(filePath);
+        metadata.md5_hash = md5hash;
+
         try {
-            const result = connection.query(
+            const result = await connection.query(
                 {
                     namedPlaceholders: true,
                     sql: `INSERT INTO ${this.TABLE_NAME} (
@@ -79,15 +94,7 @@ class FileMetadata extends DbModel {
                             ${this.getPlaceholders()}
                           ) ON DUPLICATE KEY UPDATE ${this.getValuesExpressions()};`,
                 },
-                {
-                    md5_hash: md5hash, bitrate, sample_rate, number_of_channels, codec_profile, encoder,
-                    duration, acoustid_id, comment, album, artist, date: theDate,
-                    genre, isrc, label, language, lyricist, media, musicbrainz_workid,
-                    musicbrainz_albumid, musicbrainz_recordingid, musicbrainz_artistid,
-                    musicbrainz_albumartistid, musicbrainz_releasegroupid, musicbrainz_trackid,
-                    originaldate, originalyear, has_picture, releasecountry, title, track: theTrack,
-                    writer, year,
-                },
+                metadata,
             );
 
             if (result.warningStatus !== 0) {

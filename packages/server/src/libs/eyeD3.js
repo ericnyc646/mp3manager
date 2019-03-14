@@ -1,5 +1,5 @@
 const _ = require('underscore');
-const { execute } = require('./utils');
+const { execute, mp3hash } = require('./utils');
 const { scanner } = require('../config/getConfig');
 
 class EyeD3 {
@@ -41,11 +41,14 @@ class EyeD3 {
      */
     static async run(args) {
         const { stderr, stdout, error } = await execute('eyeD3', args);
-        if (this.isError(stderr, error)) {
+        
+        const result = `${stderr}${stdout}`;
+
+        if (this.isError(result, error)) {
             return null;
         }
 
-        return stdout;
+        return result;
     }
 
     /**
@@ -68,9 +71,10 @@ class EyeD3 {
      * all other comments (default true)
      * @param {string} filePath file's absolute path
      */
-    static markFileAsScanned(filePath) {
+    static async markFileAsScanned(filePath) {
         const description = EyeD3.TAG;
-        const comment = `${description}-${Date.now()}`; // the only part visible to music-metadata
+        const md5 = await mp3hash(filePath);
+        const comment = `${description}-${md5}-${Date.now()}`; // the only part visible to music-metadata
         const lang = 'eng';
         // description and lang are unique among comments. If there's already
         // another comment with the same values, it gets overwritten.

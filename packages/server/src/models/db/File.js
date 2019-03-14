@@ -4,6 +4,7 @@ const { promisify } = require('util');
 const { getConnection } = require('../../libs/pool');
 const { scanner: { batchSize } } = require('../../config/getConfig');
 const { mp3hash } = require('../../libs/utils');
+const FileMetadata = require('./FileMetadata');
 const DbModel = require('./DbModel');
 
 const getStats = promisify(fs.stat);
@@ -30,10 +31,6 @@ class File extends DbModel {
     static async batchInsert(files) {
         const connection = await getConnection();
 
-        if (_.isNull(connection)) {
-            return {};
-        }
-
         const batchSql = {
             namedPlaceholders: true,
             sql: `INSERT INTO ${File.TABLE_NAME}
@@ -51,17 +48,17 @@ class File extends DbModel {
                 values = [];
             }
 
-            const { name, path } = file;
+            const { name, path: thePath } = file;
             // eslint-disable-next-line
             const result = await Promise.all([
-                mp3hash(path),
-                getStats(path),
+                mp3hash(thePath),
+                getStats(thePath),
             ]);
             const [md5_hash, stat] = result;
             const { atime, mtime, size } = stat;
 
             values.push({
-                name, atime, mtime, size, path, md5_hash,
+                name, atime, mtime, size, path: thePath, md5_hash,
             });
         }
 
@@ -79,29 +76,31 @@ class File extends DbModel {
      * @param {Object} params fields to be saved inside the table
      */
     static async insert(params) {
-        const { name, path } = params;
+        const { name, path: thePath } = params;
         const result = await Promise.all([
-            mp3hash(path),
-            getStats(path),
+            mp3hash(thePath),
+            getStats(thePath),
         ]);
         const [md5_hash, stat] = result;
         const { atime, mtime, size } = stat;
         const connection = await getConnection();
 
-        if (_.isNull(connection)) {
-            return {};
-        }
-
         try {
-            return connection.query(
+            const queryResult = await connection.query(
                 {
                     namedPlaceholders: true,
                     sql: `INSERT INTO ${File.TABLE_NAME}
                             (${this.getFields()})
                           VALUES (${this.getPlaceholders()})`,
                 },
-                { name, atime, mtime, size, path, md5_hash },
+                { name, atime, mtime, size, path: thePath, md5_hash },
             );
+
+            if (queryResult.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return queryResult;
         } finally {
             connection.end();
         }
@@ -113,24 +112,78 @@ class File extends DbModel {
     static async delete(fileId) {
         const connection = await getConnection();
 
-        if (_.isNull(connection)) {
-            return {};
-        }
-
         try {
-            return connection.query(
+            const result = await connection.query(
                 {
                     namedPlaceholders: true,
                     sql: `DELETE FROM ${File.TABLE_NAME} WHERE id = :id`,
                 },
                 { fileId },
             );
+
+            if (result.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return result;
         } finally {
             connection.end();
         }
     }
+
     /**
-     * It retrieves music file
+     * It gets all the info about a music file performing a JOIN
+     * with the metadata's table
+     * @param {string} md5 file's MD5
+     */
+    static async getFileAndMetadata(md5) {
+        const connection = await getConnection();
+
+        const sql = `
+            SELECT ${this.getFields()}, ${FileMetadata.getFields()}
+            FROM ${File.TABLE_NAME} f
+                INNER JOIN ${FileMetadata.TABLE_NAME} m
+            WHERE md5_hash = :md5_hash
+        `;
+
+        try {
+            const result = await connection.query(
+                {
+                    namedPlaceholders: true,
+                    sql,
+                },
+                { md5_hash: md5 },
+            );
+
+            if (result.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return result;
+        } finally {
+            connection.end();
+        }
+    }
+
+    /**
+     * It gets a file by its ID
+     * @param {Number} id Shortcut for retrieving a file by its ID
+     */
+    static async getById(id) {
+        const res = await this.get({
+            where: 'id = :id',
+            namedPlaceholders: { id },
+        });
+
+        if (!_.isEmpty(res)) {
+            return res[0];
+        }
+
+        return [];
+    }
+
+    /**
+     * It retrieves a music file
      * @param {Object} params can contains many fields:
      * `fields` as array or string, like `id, name` or `[id, name]`, default `*`
      * `conditions` must be a string (optional)
@@ -181,10 +234,6 @@ class File extends DbModel {
 
         const connection = await getConnection();
 
-        if (_.isNull(connection)) {
-            return {};
-        }
-
         let sql = `SELECT ${chosenFields} FROM ${File.TABLE_NAME} `;
         if (!_.isEmpty(chosenConditions)) {
             sql += ` WHERE ${chosenConditions}`;
@@ -199,13 +248,19 @@ class File extends DbModel {
         }
 
         try {
-            return connection.query(
+            const result = await connection.query(
                 {
                     namedPlaceholders: true,
                     sql,
                 },
                 namedPlaceholders,
             );
+
+            if (result.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return result;
         } finally {
             connection.end();
         }

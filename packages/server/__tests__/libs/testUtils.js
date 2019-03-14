@@ -8,6 +8,9 @@ const _ = require('underscore');
  * @param {Object} options it contains: 
  * - {String} filePath: file's absolute path (required)
  * - {Number} numCopies: how many copies of the specified file to be put in the temp folder
+ * @returns {Object} whose fields are:
+ * - mainFolder: the temporary folder created for the test
+ * - files: an array of files names
  */
 function copyFile(options) {
     const { filePath, numCopies = 1 } = options;

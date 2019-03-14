@@ -55,6 +55,7 @@ function safePath(filePath) {
 /**
  * It calculates the MD5 of the music file, ignoring the metadata
  * @param {string} filePath absolute path of the music file
+ * @returns {string} the file's MD5 without metadata
  */
 async function mp3hash(filePath) {
     const exePath = path.join(__dirname, '../../../../external/mp3hash/mp3hash');

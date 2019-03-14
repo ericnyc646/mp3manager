@@ -1,6 +1,7 @@
 const path = require('path');
 const _ = require('underscore');
 const File = require('../../../src/models/db/File');
+const FileMetadata = require('../../../src/models/db/FileMetadata');
 const { copyFile } = require('../../libs/testUtils');
 
 describe('File model', () => {
@@ -57,5 +58,36 @@ describe('File model', () => {
         });
 
         expect(res.length).toBe(3);
+    });
+
+    it('can do a join between file and file_metadata', async () => {
+        const { mainFolder, files } = copyFile({
+            filePath,
+            numCopies: 1,
+        });
+
+        const newFilePath = `${mainFolder}/${files[0]}`;
+        const res = await File.insert(newFilePath);
+        const { insertId } = res;
+        expect(!_.isEmpty(insertId)).toBeTruthy();
+
+        const file = await File.getById(insertId);
+        const { md5_hash } = file;
+        expect(md5_hash.length).toBe(32);
+
+        const resMeta = await FileMetadata.upsert(newFilePath, md5_hash);
+        expect(!_.isEmpty(resMeta.insertId)).toBeTruthy();
+
+        const result = await File.getFileAndMetadata(md5_hash);
+        console.log(result);
+        expect(result.name).toEqual(file.name);
+        expect(result.atime).toEqual(file.atime);
+        expect(result.mtime).toEqual(file.mtime);
+        expect(result.size).toEqual(file.path);
+        expect(result.title).toEqual('You Can Use');
+        expect(result.artist).toEqual('Captive Portal');
+        expect(result.genre).toEqual('[Electronic]');
+        expect(result.track).toEqual('1');
+        expect(result.album).toEqual('Toy Sounds Vol. 1');
     });
 });

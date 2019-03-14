@@ -4,7 +4,11 @@ const path = require('path');
 const _ = require('underscore');
 const mm = require('music-metadata');
 const File = require('../../models/db/File');
+const FileDuplicated = require('../../models/db/FileDuplicated');
+const { getConnection } = require('../../libs/pool');
+const FileMetadata = require('../../models/db/FileMetadata');
 const EyeD3 = require('../eyeD3');
+const { mp3hash } = require('../utils');
 const config = require('../../config/getConfig');
 
 class MusicScanner {
@@ -61,15 +65,34 @@ class MusicScanner {
     /**
      * It checks if a file has already been scanned in the past by looking
      * the comment ID3 metatag
-     * @param {string} filePath file's absolute path
+     * @param {Object} metadata parsed with music-metadata
      */
-    static async isFileTagged(filePath) {
-        const { common: { comment } } = await mm.parseFile(filePath);
-        return comment.some((item) => item.startsWith('MusicManager'));
+    static async isFileTagged(metadata) {
+        const { common: { comment } } = metadata;
+        return comment.filter((item) => item.startsWith('MusicManager'));
+    }
+
+    async storeFile(file) {
+        const metadata = await FileMetadata.getMetadata(file);
+        const scannerComment = this.isFileTagged(metadata);
+
+        const connection = await getConnection();
+
+        if (scannerComment.length === 1) {
+            const inFileMD5 = scannerComment[0].split('-')[1];
+            const isDuplicated = await FileDuplicated.isDuplicated(inFileMD5, file);
+            if (isDuplicated === true) {
+                return;
+            }
+
+            File.get()
+        }
     }
 
     async storeFiles(files = []) {
-        
+        for (const file of files) {
+
+        }
     }
 
     /**
@@ -79,7 +102,7 @@ class MusicScanner {
      */
     async scan() {
         return new Promise((resolve) => {
-            this.queue.on('completed', (job, result) => {
+            this.queue.on('completed', async (job, result) => {
                 this.jobsCompleted += 1;
 
                 if (result.error === true) {
@@ -91,7 +114,7 @@ class MusicScanner {
                     if (this.keepInMemory) {
                         result.musicFiles.forEach((element) => this.totalMusicFiles.push(element));
                     } else {
-                        this.storeFiles(result.musicFiles);
+                        await this.storeFiles(result.musicFiles);
                     }
 
                     for (const resource of result.directories) {
