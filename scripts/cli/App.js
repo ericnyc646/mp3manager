@@ -11,9 +11,10 @@ const exec = util.promisify(childProcess.exec);
  */
 class App {
     constructor(options) {
-        const { env, user, password, command } = options;
+        const { env, user, password, host = 'localhost', command } = options;
         this.env = env;
         this.user = user;
+        this.host = host;
         this.password = password;
         this.command = command;
         this.connection = null;
@@ -25,10 +26,12 @@ class App {
      */
     run() {
         try {
-            return this[`${this.command}`]().then(() => this.end());
+            return this[`${this.command}`]();
         } catch (e) {
             console.error(`Run failed for ${this.command}: ${e.message}`);
             return false;
+        } finally {
+            this.end();
         }
     }
 
@@ -44,6 +47,7 @@ class App {
             ({ stdout, stderr } = await exec(command));
             return { stdout, stderr };
         } catch (e) {
+            console.error('runShellCommand has failed', e);
             return { stdout: e.stdout, stderr: e.stderr };
         }
     }
@@ -73,11 +77,11 @@ class App {
         }
 
         const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
-        const { socketPath } = config.db;
+        const { host } = config.db;
 
         return mariadb.createConnection({
             user: this.user,
-            socketPath,
+            host,
             password: this.password,
             // database: 'mysql',
         });
@@ -115,7 +119,7 @@ class App {
 
             return true;
         } catch (e) {
-            console.error(e);
+            console.error('initUsers failed', e);
             return false;
         }
     }
@@ -141,18 +145,18 @@ class App {
             `);
 
             const tablesFile = `${__dirname}/../database/tables.sql`;
-            const { stdout, stderr } = await App.runShellCommand(`
-                mysql -u${this.user} -p${this.password} -D${musicDbName} < ${tablesFile}
-            `);
+            const command = `mysql -u${this.user} -p${this.password} -D${musicDbName} < ${tablesFile}`;
+
+            const { stdout, stderr } = await App.runShellCommand(command);
 
             if (_.isEmpty(stdout) && _.isEmpty(stderr)) {
                 return true;
             }
 
-            console.error(stdout, stderr);
+            console.error('initdb', stdout, stderr);
             return false;
         } catch (e) {
-            console.error(e);
+            console.error('initdb', e);
             return false;
         }
     }

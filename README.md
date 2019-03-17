@@ -3,13 +3,11 @@
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
 [![Build Status](https://travis-ci.com/chrisvoo/mp3manager.svg?branch=master)](https://travis-ci.com/chrisvoo/mp3manager)
 
-__Table of contents__
 - [Requirements](#requirements)
+  - [Windows notes](#windows-notes)
 - [Installation](#installation)
 - [Description and usage](#description-and-usage)
-    * [Scanner](#scanner)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+  - [Scanner](#scanner)
 
 This project is intended to manage a large collection of MP3 files both from the browser and from a React Native app. The browser version should do some privileged tasks like user management, absent from the mobile version which will focus more or listening to music.
 The interfaces should allow the user:
@@ -18,12 +16,20 @@ The interfaces should allow the user:
 - to manage music files (delete them and edit their metatags)
 - display lyrics
 
-Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.org/) or [Discogs](https://www.discogs.com/). There are a couple of classes in the code which deals with their API, however due to the great amount of results they give, I've not found a way to use them to automatically edit music file. Probably this part could be done inside the browser, allowing the user to choose the appropriate result. 
+Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.org/) or [Discogs](https://www.discogs.com/). There are a couple of classes in the code which deals with their API, however due to the great amount of results they give, I've not found a way to use them to automatically edit music file. Probably this part could be done inside the browser, allowing the user to choose the appropriate result.
 
 ## Requirements
+
 - __Node.js 10.14.1+__: this is the LTS version I've used, but it should work with every version superior to 7.6, which supports `async/await` out of the box without requiring transpilation.
 - __MariaDB 10.3.12__: this is the database explicitly used, but it should seamlessly work with MySQL too.
 - __Redis__: at the moment it's just used by a task manager, Bull, used by the scanner
+- __GCC compiler__: required to compile [mp3hash](https://github.com/sptim/mp3hash)
+
+### Windows notes
+
+It's recommended to install [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq). Once [installed](https://docs.microsoft.com/en-us/windows/wsl/install-win10#install-the-windows-subsystem-for-linux), you can choose a Linux distribution to be run like an app and install Redis there. Windows will be able to communicate with it ([see also this post of RedisLabs](https://redislabs.com/blog/redis-on-windows-10/)). After that, you can just run whatever Redis client you want, for example [redis-commander](https://github.com/joeferner/redis-commander).
+
+Regarding GCC, you can install [MinGW-w64](https://sourceforge.net/projects/mingw-w64/) and put the `bin` directory in your `PATH`.
 
 ## Installation
 
@@ -32,16 +38,26 @@ This is a monorepo which hosts all the parts of the architecture. You can manage
 ```bash
 npm install --global lerna
 lerna bootstrap --hoist
+npm link
 ```
 
+The last command is required to create the appropriate symlinks for using the `mm` command-line app wherever you want.
 If you want to add a module for all the projects, just do it with `lerna add <package>@<version> --hoist`.
+
+## Test
+
+Run the following commands in the root of the project:
+
+- `mm install -u root -p mypass`: it creates the database test
+- `npm test`
 
 ## Description and usage
 
 This project is composed by two main parts at the moment:
 
-* API server: this endpoint provides the frontend with a set of GraphQL queries and mutations which can be executed by the frontend.
-* Streaming server: this is responsible for serving your music collection files
+- API server: this endpoint provides the frontend with a set of GraphQL queries and mutations which can be executed by the frontend.
+
+- Streaming server: this is responsible for serving your music collection files
 
 To start these two components, just type the following commands:
 
@@ -58,7 +74,7 @@ This service is responsible for scanning a list of paths, seaching recursively f
 
 The database structure doesn't allow duplicates. The uniqueness is just given by the MD5 calculated for every file without considering its metadata (ID3). The MD5 is stored inside the ID3 Comment tag. This is the algorithm with pseudocode:
 
-```
+```text
   for every file "f":
     - read comment metatag "c"
     if c has MD5 hash:
@@ -77,7 +93,7 @@ The database structure doesn't allow duplicates. The uniqueness is just given by
 
 In order to calculate the MD5 just on the data without considering the metadata, I use a C program called [mp3hash](https://github.com/sptim/mp3hash). This program is imported as a GIT submodule in this repo under the directory `external/mp3hash`. Do the following to obtain the executable:
 
-```
+```bash
 git submodule init
 git submodule update --remote
 cd external/mp3hash

@@ -5,11 +5,15 @@
   "main": "index.js",
   "scripts": {
     "lerna": "lerna bootstrap --hoist",
-    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
     "tree": "tree -I node_modules",
-    "startServer": "NODE_ENV=production packages/server/src/start.js"
+    "startServer": "cross-env NODE_ENV=production packages/server/src/start.js"
+  },
+  "bin": {
+    "mm": "./scripts/cli/mm"
   },
   "devDependencies": {
+    "cross-env": "^5.2.0",
     "eslint": "~5.13.0",
     "eslint-config-airbnb-base": "~13.1.0",
     "eslint-plugin-import": "~2.16.0",

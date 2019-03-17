@@ -15,7 +15,7 @@ module.exports = {
         userAgent: 'mp3manager/voodoo81people@gmail.com',
     },
     db: {
-        socketPath: '/var/run/mysqld/mysqld.sock',
+        host: 'localhost', // '/var/run/mysqld/mysqld.sock',
         user: 'mp3admin_test',
         password: 'musictest',
         database: 'mp3manager_test',
