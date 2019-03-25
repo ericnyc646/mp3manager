@@ -67,8 +67,7 @@ class File extends DbModel {
         }
 
         const res = await Promise.all(promises);
-        return res.reduce((accumulator, currentValue) => 
-            accumulator + currentValue.affectedRows, 0);
+        return res.reduce((accumulator, currentValue) => accumulator + currentValue.affectedRows, 0);
     }
 
     /**
@@ -77,6 +76,11 @@ class File extends DbModel {
      */
     static async insert(params) {
         const { name, path: thePath } = params;
+
+        if (_.isEmpty(name) || _.isEmpty(thePath)) {
+            throw new Error("Missing name and/or file's path");
+        }
+
         const result = await Promise.all([
             mp3hash(thePath),
             getStats(thePath),
@@ -105,6 +109,7 @@ class File extends DbModel {
             connection.end();
         }
     }
+
     /**
      * Deletes a single file
      * @param {int} fileId integer identifier
@@ -140,10 +145,11 @@ class File extends DbModel {
         const connection = await getConnection();
 
         const sql = `
-            SELECT ${this.getFields()}, ${FileMetadata.getFields()}
+            SELECT ${this.getFields('f')}, ${FileMetadata.getFields('m')}
             FROM ${File.TABLE_NAME} f
                 INNER JOIN ${FileMetadata.TABLE_NAME} m
-            WHERE md5_hash = :md5_hash
+                ON f.md5_hash = m.md5_hash
+            WHERE f.md5_hash = :md5_hash
         `;
 
         try {

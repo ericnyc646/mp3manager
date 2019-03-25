@@ -67,27 +67,30 @@ describe('File model', () => {
         });
 
         const newFilePath = `${mainFolder}/${files[0]}`;
-        const res = await File.insert(newFilePath);
+
+        const res = await File.insert({
+            name: 'CopyFile',
+            path: newFilePath,
+        });
         const { insertId } = res;
-        expect(!_.isEmpty(insertId)).toBeTruthy();
+        expect(_.isNumber(insertId)).toBeTruthy();
 
         const file = await File.getById(insertId);
         const { md5_hash } = file;
         expect(md5_hash.length).toBe(32);
 
         const resMeta = await FileMetadata.upsert(newFilePath, md5_hash);
-        expect(!_.isEmpty(resMeta.insertId)).toBeTruthy();
+        expect(_.isNumber(resMeta.insertId)).toBeTruthy();
 
-        const result = await File.getFileAndMetadata(md5_hash);
-        console.log(result);
+        const [result] = await File.getFileAndMetadata(md5_hash);
+
         expect(result.name).toEqual(file.name);
         expect(result.atime).toEqual(file.atime);
         expect(result.mtime).toEqual(file.mtime);
-        expect(result.size).toEqual(file.path);
+        expect(result.size).toEqual(file.size);
         expect(result.title).toEqual('You Can Use');
         expect(result.artist).toEqual('Captive Portal');
-        expect(result.genre).toEqual('[Electronic]');
-        expect(result.track).toEqual('1');
+        expect(result.genre).toEqual('["Electronic"]');
         expect(result.album).toEqual('Toy Sounds Vol. 1');
     });
 });

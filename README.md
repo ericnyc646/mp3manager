@@ -29,7 +29,7 @@ Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.o
 
 It's recommended to install [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq). Once [installed](https://docs.microsoft.com/en-us/windows/wsl/install-win10#install-the-windows-subsystem-for-linux), you can choose a Linux distribution to be run like an app and install Redis there. Windows will be able to communicate with it ([see also this post of RedisLabs](https://redislabs.com/blog/redis-on-windows-10/)). After that, you can just run whatever Redis client you want, for example [redis-commander](https://github.com/joeferner/redis-commander).
 
-Regarding GCC, you can install [MinGW-w64](https://sourceforge.net/projects/mingw-w64/) and put the `bin` directory in your `PATH`.
+Regarding GCC, you can install a current version of [MinGW-w64](https://sourceforge.net/projects/mingw-w64/), specify win32 as thread when requested and additionally, choose the architecture x86_64. Put the `bin` directory in your `PATH` as last step.
 
 ## Installation
 

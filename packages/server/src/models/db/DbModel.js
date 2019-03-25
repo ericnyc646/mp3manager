@@ -20,11 +20,17 @@ class DbModel {
 
     /**
      * It concatenates all the fields with a comma, useful for SELECT
+     * @params {String} alias 
      */
-    static getFields() {
+    static getFields(alias = '') {
         this.check();
 
         const { FIELDS } = this;
+
+        if (!_.isEmpty(alias)) {
+            return FIELDS.map((f) => `${alias}.${f}`).join(',');
+        }
+
         return FIELDS.join(',');
     }
 
