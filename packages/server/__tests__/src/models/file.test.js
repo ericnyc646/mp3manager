@@ -9,7 +9,7 @@ describe('File model', () => {
 
     it('can insert and get a file from DB', async () => {
         const mp3 = {
-            name: 'A sample',
+            name: 'A sample1',
             path: filePath,
         };
         /* INSERT */
@@ -25,14 +25,14 @@ describe('File model', () => {
                 'id', 'name', 'atime', 'size', 'md5_hash',
             ],
             where: 'name = :name',
-            namedPlaceholders: { name: 'A sample' },
+            namedPlaceholders: { name: 'A sample1' },
         });
 
         expect(res.length).toBe(1);
 
         const { id, name, atime, size, md5_hash } = res[0];
-        expect(id).toBe(1);
-        expect(name).toBe('A sample');
+        expect(id).not.toBeNull();
+        expect(name).toBe('A sample1');
         expect(_.isNumber(size)).toBeTruthy();
         expect(_.isDate(atime)).toBeTruthy();
         expect(md5_hash).toEqual('5db1ef2c0e0b409a5f1d50bc8227d144');
