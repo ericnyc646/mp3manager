@@ -33,7 +33,7 @@ describe('FileMetadata model', () => {
         const { affectedRows: rows, insertId: insId, warningStatus: warns } = result;
 
         expect(rows).toEqual(1);
-        expect(insId).toEqual(1);
+        expect(_.isNumber(insId)).toBeTruthy();
         expect(warns).toEqual(0);
     });
 });
