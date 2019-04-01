@@ -20,18 +20,32 @@ class DbModel {
 
     /**
      * It concatenates all the fields with a comma, useful for SELECT
-     * @params {String} alias 
+     * @params {Object} it may have the following fields:
+     * - alias: table's alias which prefixes the select fields
+     * - filterOut: a list of fields not to be considered
+     * @returns {String} a concatenation of the selected fields 
      */
-    static getFields(alias = '') {
+    static getFields(options) {
         this.check();
 
         const { FIELDS } = this;
+        let finalFields = FIELDS;
 
-        if (!_.isEmpty(alias)) {
-            return FIELDS.map((f) => `${alias}.${f}`).join(',');
+        if (_.isEmpty(options)) {
+            return finalFields.join(',');
+        }
+        
+        const { alias = '', filterOut = [] } = options;
+
+        if (!_.isEmpty(filterOut)) {
+            finalFields = finalFields.filter((f) => !filterOut.includes(f));
         }
 
-        return FIELDS.join(',');
+        if (!_.isEmpty(alias)) {
+            finalFields = finalFields.map((f) => `${alias}.${f}`);
+        }
+
+        return finalFields.join(',');
     }
 
     /**
@@ -43,8 +57,14 @@ class DbModel {
         this.check();
 
         const { FIELDS } = this;
-        const { forUpdate = false } = options;
-        return FIELDS.map((f) => (forUpdate ? `${f}=:${f}` : `:${f}`)).join(',');
+        const { forUpdate = false, filterOut = [] } = options;
+        let finalFields = FIELDS;
+
+        if (!_.isEmpty(filterOut)) {
+            finalFields = finalFields.filter((f) => !filterOut.includes(f));
+        }
+
+        return finalFields.map((f) => (forUpdate ? `${f}=:${f}` : `:${f}`)).join(',');
     }
 
     /**

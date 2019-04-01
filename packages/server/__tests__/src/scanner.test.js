@@ -60,7 +60,16 @@ describe('Music scanner functions', () => {
             '3.1.mp3',
             '1.2.mp3',
         ];
-        expect(musicFilesBasenames.sort().every((value, index) =>
-            value === expectedArrayResult.sort()[index])).toBeTruthy();
+        expect(musicFilesBasenames.sort().every((value, index) => value === expectedArrayResult.sort()[index])).toBeTruthy();
     });
+
+/*     it('can store the files taking care of duplicates', async () => {
+        const { mainFolder, files } = copyFile({
+            filePath: `${resDir}/Under The Ice (Scene edit).mp3`,
+        });
+        const newFileCopied = `${mainFolder}/${files[0]}`;
+
+        const result = await MusicScanner.storeFile(newFileCopied);
+        expect(result).toBeTruthy();
+    }); */
 });

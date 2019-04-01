@@ -4,7 +4,8 @@ const os = require('os');
 const _ = require('underscore');
 
 /**
- * 
+ * It copies an MP3 in a temporary directory with a random name, appending
+ * a random buffer so that its MD5 it's unique
  * @param {Object} options it contains: 
  * - {String} filePath: file's absolute path (required)
  * - {Number} numCopies: how many copies of the specified file to be put in the temp folder

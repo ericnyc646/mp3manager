@@ -22,8 +22,10 @@ class FileMetadata extends DbModel {
     }
 
     /**
-     * Get a subset of all the metatag and file's info
+     * Get a subset of all the metatags and file's info,
+     * parsing it with `mm`
      * @param {string} filePath file's absolute path
+     * @returns {Promise<Object>} the metatags found
      */
     static async getMetadata(filePath) {
         const metadata = await mm.parseFile(filePath, { duration: true });

@@ -2,18 +2,19 @@ const Queue = require('bull');
 const os = require('os');
 const path = require('path');
 const _ = require('underscore');
-const mm = require('music-metadata');
+const fs = require('fs');
+const { promisify } = require('util');
 const File = require('../../models/db/File');
 const FileDuplicated = require('../../models/db/FileDuplicated');
-const { getConnection } = require('../../libs/pool');
 const FileMetadata = require('../../models/db/FileMetadata');
 const EyeD3 = require('../eyeD3');
-const { mp3hash } = require('../utils');
 const config = require('../../config/getConfig');
+
+const getStats = promisify(fs.stat);
 
 class MusicScanner {
     /**
-     * Options may contain:
+     * @param {Object} options it may contain:
         - paths (Array): a list of URI to be scanned, every item could be a file or a directory
         - workers (Int): numers of processes, by default equal to the cores of the machine
         - queueName (String): not particularly relevant for his use case (one queue only)
@@ -66,33 +67,133 @@ class MusicScanner {
      * It checks if a file has already been scanned in the past by looking
      * the comment ID3 metatag
      * @param {Object} metadata parsed with music-metadata
+     * @returns {Array<String>} an one-length array with 
      */
-    static async isFileTagged(metadata) {
-        const { common: { comment } } = metadata;
+    static async isFileTagged(comment) {
         return comment.filter((item) => item.startsWith('MusicManager'));
     }
 
-    async storeFile(file) {
+    /**
+     * It stores all the info about a file, its metadata and mark it as
+     * scanned. If the insert
+     * @param {String} fileName file's name
+     * @param {String} filePath file's path
+     * @returns {Promise<Object|Boolean>} true if the entire process goes well (no errors of any kind,
+     * duplicates are considered errors), otherwise an object containing the error's details
+     */
+    static async insertAllData(fileName, filePath) {
+        return File.insert({ name: fileName, path: filePath })
+            .then(async (result) => {
+                const { error, duplicated, md5_hash } = result;
+                if (duplicated) {
+                    const res = await FileDuplicated.insert({
+                        md5_hash, path: filePath,
+                    });
+
+                    res.isDuplicated = true;
+                    return res;
+                }
+
+                // we store metadata only if the insert was successful
+                // TODO: consider to allow to pass metadata to upsert, so we avoid two parse twice
+                // the same file
+                if (!error) {
+                    const res = await FileMetadata.upsert(filePath, md5_hash);
+                    res.isDuplicated = false;
+                    return res;
+                }
+
+                return error;
+            })
+            .then(async (result) => {
+                const { isDuplicated, error } = result;
+                // we tag the file only if the insert was successful
+                if (!error && !isDuplicated) {
+                    await EyeD3.markFileAsScanned();
+                    return true;
+                }
+
+                return result;
+            });
+    }
+
+    /**
+     * This is the function which has the core logic for dealing with all the possible
+     * cases (file moved/renamed, content or metadata changed, etc)
+     * @param {String} file file's path
+     */
+    static async storeFile(file) {
         const metadata = await FileMetadata.getMetadata(file);
-        const scannerComment = this.isFileTagged(metadata);
+        const scannerComment = MusicScanner.isFileTagged(metadata);
+        const fileName = path.basename(file, path.extname(file));
 
-        const connection = await getConnection();
-
-        if (scannerComment.length === 1) {
+        if (!_.isEmpty(scannerComment)) {
             const inFileMD5 = scannerComment[0].split('-')[1];
             const isDuplicated = await FileDuplicated.isDuplicated(inFileMD5, file);
             if (isDuplicated === true) {
                 return;
             }
 
-            File.get()
+            const data = await File.getFileAndMetadata(inFileMD5);
+            if (_.isEmpty(data)) {
+                console.warn(`File ${file} [${inFileMD5}] is tagged but absent from the db!`);
+                await MusicScanner.insertAllData(fileName, file);
+                return;
+            }
+
+            const {
+                name, atime, mtime, size, path: thePath, md5_hash, // file table
+                bitrate, sample_rate, number_of_channels, codec_profile,
+                encoder, duration, acoustid_id, comment, album, artist, date,
+                genre, isrc, label, language, lyricist, media, musicbrainz_workid,
+                musicbrainz_albumid, musicbrainz_recordingid, musicbrainz_artistid,
+                musicbrainz_albumartistid, musicbrainz_releasegroupid, musicbrainz_trackid,
+                originaldate, originalyear, has_picture, releasecountry,
+                title, track, writer, year,
+            } = data;
+
+            const { atime: atimeFile, mtime: mtimeFile, size: sizeFile } = getStats(file);
+
+            if (fileName !== name || atimeFile.toString() !== atime.toString()
+                || mtimeFile.toString() !== mtime.toString() || size !== sizeFile
+                || thePath !== file) {
+                await File.update({
+                    atime: atimeFile, mtime: mtimeFile, size: sizeFile,
+                    path: file, md5_hash,
+                });
+            }
+
+            if (metadata.bitrate !== bitrate || metadata.sample_rate !== sample_rate
+                || metadata.number_of_channels !== number_of_channels || metadata.codec_profile !== codec_profile
+                || metadata.encoder !== encoder || metadata.duration !== duration
+                || metadata.acoustid_id !== acoustid_id || metadata.comment !== comment
+                || metadata.album !== album || metadata.artist !== artist
+                || metadata.date !== date || metadata.genre !== genre || metadata.isrc !== isrc
+                || metadata.label !== label || metadata.language !== language || metadata.lyricist !== lyricist
+                || metadata.media !== media || metadata.musicbrainz_workid !== musicbrainz_workid
+                || metadata.musicbrainz_albumid !== musicbrainz_albumid
+                || metadata.musicbrainz_recordingid !== musicbrainz_recordingid
+                || metadata.musicbrainz_artistid !== musicbrainz_artistid
+                || metadata.musicbrainz_albumartistid !== musicbrainz_albumartistid
+                || metadata.musicbrainz_releasegroupid !== musicbrainz_releasegroupid
+                || metadata.musicbrainz_trackid !== musicbrainz_trackid
+                || metadata.originaldate !== originaldate || metadata.originalyear !== originalyear
+                || metadata.has_picture !== has_picture || metadata.releasecountry !== releasecountry
+                || metadata.title !== title || metadata.track !== track || metadata.writer !== writer
+                || metadata.year !== year) {
+                await FileMetadata.upsert(file, inFileMD5);
+            }
+        } else {
+            await MusicScanner.insertAllData(fileName, file);
         }
     }
 
-    async storeFiles(files = []) {
+    static async storeFiles(files = []) {
+        const promises = [];
         for (const file of files) {
-
+            promises.push(MusicScanner.storeFile(file));
         }
+        return Promise.all(promises);
     }
 
     /**

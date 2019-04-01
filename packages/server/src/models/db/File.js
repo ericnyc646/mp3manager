@@ -24,6 +24,43 @@ class File extends DbModel {
     }
 
     /**
+     * It updates a record in file table by MD5
+     * @param {Object} params file table fields
+     * @returns {Promise<Object>} node.js mariadb's driver response
+     */
+    static async update(params) {
+        if (!params || _.isEmpty(params.md5_hash)) {
+            throw new Error('File.update: missing or null params (md5 required)');
+        }
+
+        const { md5_hash, atime, mtime, size, name, thePath } = params;
+        const connection = await getConnection();
+        try {
+            const placeholders = this.getPlaceholders({
+                filter_out: ['md5_hash'],
+                forUpdate: true,
+            });
+            const queryResult = await connection.query(
+                {
+                    namedPlaceholders: true,
+                    sql: `UPDATE ${File.TABLE_NAME}
+                          SET ${placeholders}
+                          WHERE md5_hash=:md5_hash`,
+                },
+                { name, atime, mtime, size, path: thePath, md5_hash },
+            );
+
+            if (queryResult.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return queryResult;
+        } finally {
+            connection.end();
+        }
+    }
+
+    /**
      * Inserts multiple files at once
      * @param {Array} files Array of objects which each of them represents a file
      * @returns {Number} the number of affected rows
@@ -73,6 +110,8 @@ class File extends DbModel {
     /**
      * Inserts a new file, calculating the hashes
      * @param {Object} params fields to be saved inside the table
+     * @returns {Promise<Object>} it returns the result of the insert operation and the
+     * file's MD5 if everything goes fine, otherwise an object with the details of the failure
      */
     static async insert(params) {
         const { name, path: thePath } = params;
@@ -104,7 +143,16 @@ class File extends DbModel {
                 await this.showWarnings(connection);
             }
 
+            queryResult.md5_hash = md5_hash;
             return queryResult;
+        } catch (e) {
+            const { code, message } = e;
+            return {
+                error: true,
+                duplicated: e.code === 'ER_DUP_ENTRY',
+                code,
+                message,
+            };
         } finally {
             connection.end();
         }
@@ -137,17 +185,19 @@ class File extends DbModel {
     }
 
     /**
-     * It gets all the info about a music file performing a JOIN
+     * It gets all the info from the db about a music file performing a JOIN
      * with the metadata's table
      * @param {string} md5 file's MD5
      */
     static async getFileAndMetadata(md5) {
         const connection = await getConnection();
 
+        // LEFT JOIN because if for whatever reason we have a record in file table but
+        // we don't have any metadata for it, this still works
         const sql = `
-            SELECT ${this.getFields('f')}, ${FileMetadata.getFields('m')}
+            SELECT ${this.getFields({ alias: 'f' })}, ${FileMetadata.getFields({ alias: 'm' })}
             FROM ${File.TABLE_NAME} f
-                INNER JOIN ${FileMetadata.TABLE_NAME} m
+                LEFT JOIN ${FileMetadata.TABLE_NAME} m
                 ON f.md5_hash = m.md5_hash
             WHERE f.md5_hash = :md5_hash
         `;

@@ -14,8 +14,9 @@ describe('File model', () => {
         };
         /* INSERT */
         let res = await File.insert(mp3);
-        const { affectedRows, insertId, warningStatus } = res;
+        const { affectedRows, insertId, warningStatus, md5_hash: md5 } = res;
         expect(affectedRows).toEqual(1);
+        expect(md5).not.toBeNull();
         expect(_.isNumber(insertId)).toBeTruthy(); // other files may be inserted for other tests
         expect(warningStatus).toEqual(0);
 
@@ -92,5 +93,28 @@ describe('File model', () => {
         expect(result.artist).toEqual('Captive Portal');
         expect(result.genre).toEqual('["Electronic"]');
         expect(result.album).toEqual('Toy Sounds Vol. 1');
+    });
+
+    it('can catch a unique constraint violation', async () => {
+        const { mainFolder, files } = copyFile({
+            filePath,
+            numCopies: 1,
+        });
+
+        const newFilePath = `${mainFolder}/${files[0]}`;
+
+        let res = await File.insert({
+            name: 'CopyFile',
+            path: newFilePath,
+        });
+        const { insertId } = res;
+        expect(_.isNumber(insertId)).toBeTruthy();
+
+        res = await File.insert({
+            name: 'CopyFile',
+            path: newFilePath,
+        });
+        expect(res.error).toBeTruthy();
+        expect(res.duplicated).toBeTruthy();
     });
 });
