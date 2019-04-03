@@ -7,7 +7,7 @@
     "lerna": "lerna bootstrap --hoist",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
     "tree": "tree -I node_modules",
-    "startServer": "cross-env NODE_ENV=production packages/server/src/start.js"
+    "startServer": "cross-env NODE_ENV=production node packages/server/src/start.js"
   },
   "bin": {
     "mm": "./scripts/cli/mm"

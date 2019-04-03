@@ -24,6 +24,7 @@ Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.o
 - __MariaDB 10.3.12__: this is the database explicitly used, but it should seamlessly work with MySQL too.
 - __Redis__: at the moment it's just used by a task manager, Bull, used by the scanner
 - __GCC compiler__: required to compile [mp3hash](https://github.com/sptim/mp3hash)
+- __Python 2.7, >= 3.3__: required by [eyeD3](https://pypi.org/project/eyeD3/). You can install this program with `pip install eyeD3`. `pip` will install the program under `~/.local/bin/` (under Ubuntu). Please put this directory in your PATH.
 
 ### Windows notes
 
