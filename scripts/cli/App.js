@@ -153,6 +153,12 @@ class App {
                 return true;
             }
 
+            if (!_.isEmpty(stderr)) {
+                if (stderr.includes('Using a password on the command line interface can be insecure')) {
+                    return true;
+                }
+            }
+
             console.error('initdb', stdout, stderr);
             return false;
         } catch (e) {
