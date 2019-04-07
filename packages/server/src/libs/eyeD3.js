@@ -63,6 +63,10 @@ class EyeD3 {
      * @param {string} filePath absolute URL of the music file
      */
     static async removeAllTags(filePath) {
+        if (_.isEmpty(filePath)) {
+            throw new Error('EyeD3.removeAllTags: passed an empty file path');
+        }
+
         return this.run(['--remove-all', filePath]);
     }
 
@@ -72,6 +76,10 @@ class EyeD3 {
      * @param {string} filePath file's absolute path
      */
     static async markFileAsScanned(filePath) {
+        if (_.isEmpty(filePath)) {
+            throw new Error('EyeD3.removeAllTags: passed an empty file path');
+        }
+
         const description = EyeD3.TAG;
         const md5 = await mp3hash(filePath);
         const comment = `${description}-${md5}-${Date.now()}`; // the only part visible to music-metadata

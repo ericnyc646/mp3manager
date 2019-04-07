@@ -2,10 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const fileType = require('file-type');
 const mm = require('music-metadata');
+const File = require('../../src/models/db/File');
+const FileMetaData = require('../../src/models/db/FileMetadata');
 const EyeD3 = require('../../src/libs/eyeD3');
 const isMp3 = require('../../src/libs/scanner/ismp3');
 const MusicScanner = require('../../src/libs/scanner');
-const { copyFile } = require('../libs/testUtils');
+const { copyFile, moveFile } = require('../libs/testUtils');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
@@ -63,13 +65,46 @@ describe('Music scanner functions', () => {
         expect(musicFilesBasenames.sort().every((value, index) => value === expectedArrayResult.sort()[index])).toBeTruthy();
     });
 
-/*     it('can store the files taking care of duplicates', async () => {
+    /* fit('can store the files taking care of duplicates', async () => {
         const { mainFolder, files } = copyFile({
             filePath: `${resDir}/Under The Ice (Scene edit).mp3`,
         });
         const newFileCopied = `${mainFolder}/${files[0]}`;
 
-        const result = await MusicScanner.storeFile(newFileCopied);
+        // insert
+        let result = await MusicScanner.storeFile(newFileCopied);
         expect(result).toBeTruthy();
+
+        let theFile = await File.get({
+            fields: ['md5_hash', 'modification_time'],
+            where: `path = "${newFileCopied}"`,
+        });
+        let md5 = theFile[0].md5_hash;
+        let modTime = theFile[0].modification_time;
+        expect(md5).not.toBeNull();
+        expect(modTime).toBeNull();
+        expect(theFile.length).toBe(1);
+
+        const meta = await FileMetaData.get({
+            fields: 'title',
+            where: `md5_hash = "${md5}"`,
+        });
+        expect(meta[0].title).not.toBeNull();
+
+        // update, same file another path
+        const newPath = moveFile(newFileCopied);
+        result = await MusicScanner.storeFile(newPath);
+        expect(result).toBeTruthy();
+
+        theFile = await File.get({
+            fields: ['md5_hash', 'modification_time'],
+            where: `path = "${newPath}" OR 
+                    path = "${newFileCopied}"`,
+        });
+        md5 = theFile[0].md5_hash;
+        modTime = theFile[0].modification_time;
+        expect(md5).not.toBeNull();
+        expect(modTime).not.toBeNull();
+        expect(theFile.length).toBe(1);
     }); */
 });

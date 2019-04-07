@@ -7,6 +7,9 @@ module.exports = {
         url: 'http://localhost',
         webSocketPort: 4668,
     },
+    logging: {
+        level: 'debug',
+    },
     scanner: {
         removeAllComments: true, // if to leave or not just MusicManager comment
         batchSize: 2, // how many values to batch insert
@@ -14,6 +17,7 @@ module.exports = {
     apiIntegration: { // shared properties between integrations
         userAgent: 'mp3manager/voodoo81people@gmail.com',
     },
+    // dedicated to mariadb createPool function
     db: {
         host: 'localhost', // '/var/run/mysqld/mysqld.sock',
         user: 'mp3admin_test',

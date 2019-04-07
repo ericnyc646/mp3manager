@@ -1,4 +1,6 @@
 const _ = require('underscore');
+const { getConnection } = require('../../libs/pool');
+const logger = require('../../libs/logger');
 
 class DbModel {
     /**
@@ -88,10 +90,96 @@ class DbModel {
             .then((rows) => {
                 if (!_.isEmpty(rows)) {
                     const { Level, Code, Message } = rows[0];
-                    console.warn(`Level: ${Level} [${Code}]: ${Message}`);
+                    logger.warn('DbModel', `Level: ${Level} [${Code}]: ${Message}`);
                 }
             })
-            .catch((err) => console.error(err));
+            .catch((err) => logger.error('DbModel', err));
+    }
+
+    /**
+     * It retrieves records from a table
+     * @param {Object} params can contains many fields:
+     * `fields` as array or string, like `id, name` or `[id, name]`, default `*`
+     * `conditions` must be a string (optional)
+     * `pagination` an object with `limit` and `offset` (optional)
+     * `sorting` has a `column` and `direction` fields (optional)
+     */
+    static async get(params) {
+        let chosenFields = '*';
+        let chosenConditions;
+        let chosenLimit;
+        let chosenSorting;
+
+        const { fields, where, namedPlaceholders, pagination, sorting } = params;
+
+        if (!_.isEmpty(fields)) {
+            chosenFields = _.isArray(fields) ? fields.join(',') : fields;
+        }
+
+        if (!_.isEmpty(where) && _.isString(where)) {
+            chosenConditions = where;
+        }
+
+        if (!_.isEmpty(sorting)) {
+            const { column, direction } = sorting;
+
+            if (!_.isEmpty(column)) {
+                chosenSorting = column;
+            }
+
+            if (!_.isEmpty(direction) && !_.isEmpty(column)) {
+                chosenSorting += ` ORDER BY ${direction}`;
+            }
+        }
+
+        if (!_.isEmpty(pagination)) {
+            const { limit, offset } = pagination;
+            const theLimit = parseInt(limit, 10);
+            const theOffset = parseInt(offset, 10);
+
+            if (_.isNumber(theLimit) && theLimit >= 0) {
+                chosenLimit = `LIMIT ${theLimit}`;
+            }
+
+            if (_.isNumber(theOffset)) {
+                chosenLimit += `OFFSET ${theOffset}`;
+            }
+        }
+
+        const connection = await getConnection();
+
+        let sql = `SELECT ${chosenFields} FROM ${this.TABLE_NAME} `;
+        if (!_.isEmpty(chosenConditions)) {
+            sql += ` WHERE ${chosenConditions}`;
+        }
+
+        if (!_.isEmpty(chosenSorting)) {
+            sql += chosenSorting;
+        }
+
+        if (!_.isEmpty(chosenLimit)) {
+            sql += chosenLimit;
+        }
+
+        logger.debug('DbModel', { sql, namedPlaceholders });
+
+        try {
+            const result = await connection.query(
+                {
+                    namedPlaceholders: true,
+                    sql,
+                },
+                namedPlaceholders,
+            );
+
+            if (result.warningStatus !== 0) {
+                await this.showWarnings(connection);
+            }
+
+            return result;
+        } finally {
+            connection.end();
+        }
     }
 }
 

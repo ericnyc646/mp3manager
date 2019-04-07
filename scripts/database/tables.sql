@@ -18,6 +18,7 @@ CREATE TABLE `file_duplicated` (
     path VARCHAR(500) NOT NULL COMMENT 'VARCHAR needed to allow this field to be used in composite UNIQUE KEY',
     md5_hash CHAR(32) COMMENT 'MD5 without including metadata',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_dup(path, md5_hash)
 ) ENGINE = InnoDB, COMMENT = 'Duplicated music files';   
