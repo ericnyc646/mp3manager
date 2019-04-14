@@ -19,6 +19,7 @@ class FileDuplicated extends DbModel {
      * It verifies if a file is already marked as duplicated
      * @param {string} md5_hash file's MD5 that we're currently examinating
      * @param {string} thePath file's absolute path
+     * @returns {Promise<Boolean>} true if exists, false otherwise
      */
     static async isDuplicated(md5_hash, thePath) {
         const connection = await getConnection();

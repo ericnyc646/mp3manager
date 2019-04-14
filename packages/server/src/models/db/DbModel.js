@@ -103,6 +103,7 @@ class DbModel {
      * `conditions` must be a string (optional)
      * `pagination` an object with `limit` and `offset` (optional)
      * `sorting` has a `column` and `direction` fields (optional)
+     * `namedPlaceholders`: placeholders for where conditions
      */
     static async get(params) {
         let chosenFields = '*';

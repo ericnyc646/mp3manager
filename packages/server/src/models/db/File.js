@@ -33,7 +33,7 @@ class File extends DbModel {
             throw new Error('File.update: missing or null params (md5 required)');
         }
 
-        const { md5_hash, atime, mtime, size, name, thePath } = params;
+        const { md5_hash, atime, mtime, size, name, path } = params;
         const connection = await getConnection();
         try {
             const placeholders = this.getPlaceholders({
@@ -47,7 +47,7 @@ class File extends DbModel {
                           SET ${placeholders}
                           WHERE md5_hash=:md5_hash`,
                 },
-                { name, atime, mtime, size, path: thePath, md5_hash },
+                { name, atime, mtime, size, path, md5_hash },
             );
 
             if (queryResult.warningStatus !== 0) {
@@ -152,6 +152,7 @@ class File extends DbModel {
                 duplicated: e.code === 'ER_DUP_ENTRY',
                 code,
                 message,
+                md5_hash,
             };
         } finally {
             connection.end();
@@ -188,6 +189,7 @@ class File extends DbModel {
      * It gets all the info from the db about a music file performing a JOIN
      * with the metadata's table
      * @param {string} md5 file's MD5
+     * @returns {Promise<Object>} file's data or null if it doesn't exist
      */
     static async getFileAndMetadata(md5) {
         const connection = await getConnection();
@@ -215,7 +217,11 @@ class File extends DbModel {
                 await this.showWarnings(connection);
             }
 
-            return result;
+            if (!_.isEmpty(result)) {
+                return result[0];
+            }
+
+            return [];
         } finally {
             connection.end();
         }

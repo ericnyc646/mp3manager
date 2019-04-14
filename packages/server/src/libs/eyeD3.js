@@ -61,6 +61,7 @@ class EyeD3 {
     /**
      * It strips away all the metadata from the file
      * @param {string} filePath absolute URL of the music file
+     * @returns the output of eyeD3's execution (never considered)
      */
     static async removeAllTags(filePath) {
         if (_.isEmpty(filePath)) {
@@ -68,6 +69,19 @@ class EyeD3 {
         }
 
         return this.run(['--remove-all', filePath]);
+    }
+
+    /**
+     * It strips away all the comments from the file
+     * @param {string} filePath absolute URL of the music file
+     * @returns the output of eyeD3's execution (never considered)
+     */
+    static async removeAllComments(filePath) {
+        if (_.isEmpty(filePath)) {
+            throw new Error('EyeD3.removeAllComments: passed an empty file path');
+        }
+
+        return this.run(['--remove-all-comments', filePath]);
     }
 
     /**

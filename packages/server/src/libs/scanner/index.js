@@ -75,9 +75,10 @@ class MusicScanner {
      * It checks if a file has already been scanned in the past by looking
      * the comment ID3 metatag
      * @param {Object} metadata parsed with music-metadata
-     * @returns {Array<String>} an one-length array with 
+     * @returns {Array<String>} an one-length array with the MusicScanner's comment or an empty
+     * array
      */
-    static async isFileTagged(comment) {
+    static getScannerComment(comment) {
         if (_.isEmpty(comment) || !_.isArray(comment)) {
             return [];
         }
@@ -165,6 +166,25 @@ class MusicScanner {
     }
 
     /**
+     * It compares two dates
+     * @param {Date} d1 first date
+     * @param {Date} d2 second date
+     * @returns {Boolean} true if they're equal (or both null), false otherwise
+     */
+    static areDatesEqual(d1, d2) {
+        logger.debug('Comparing dates', { d1, d2 });
+        if (_.isEmpty(d1) && _.isEmpty(d2)) {
+            return true;
+        }
+
+        if (_.isEmpty(d1) || _.isEmpty(d2)) {
+            return false;
+        }
+
+        return d1.getTime() === d2.getTime();
+    }
+
+    /**
      * This is the function which has the core logic for dealing with all the possible
      * cases (file moved/renamed, content or metadata changed, etc)
      * @param {String} file file's path
@@ -173,14 +193,25 @@ class MusicScanner {
      */
     static async storeFile(file) {
         const metadata = await FileMetadata.getMetadata(file);
-        const scannerComment = MusicScanner.isFileTagged(metadata);
         const fileName = path.basename(file, path.extname(file));
+        let scannerComment = [];
+
+        if (metadata && metadata.comment) {
+            scannerComment = MusicScanner.getScannerComment(metadata.comment);
+        }
+
+        logger.debug('Music scanner', {
+            phase: 'store file: before checking md5',
+            path: file,
+            scannerComment,
+            fileName,
+        });
 
         if (!_.isEmpty(scannerComment)) {
             const inFileMD5 = scannerComment[0].split('-')[1];
             const isDuplicated = await FileDuplicated.isDuplicated(inFileMD5, file);
             logger.debug('Music scanner', {
-                phase: 'previously saved',
+                phase: 'md5 found, previously saved',
                 path: file,
                 inFileMD5,
                 isDuplicated,
@@ -207,17 +238,17 @@ class MusicScanner {
                 title, track, writer, year,
             } = data;
 
-            const { atime: atimeFile, mtime: mtimeFile, size: sizeFile } = getStats(file);
+            const { atime: atimeFile, mtime: mtimeFile, size: sizeFile } = await getStats(file);
             const nameChanged = fileName !== name;
-            const aTimeChanged = atimeFile.toString() !== atime.toString();
-            const mTimeChanged = mtimeFile.toString() !== mtime.toString();
+            const aTimeChanged = !this.areDatesEqual(atimeFile, atime);
+            const mTimeChanged = !this.areDatesEqual(mtimeFile, mtime);
             const sizeChanged = size !== sizeFile;
             const pathChanged = thePath !== file;
 
             if (nameChanged || aTimeChanged || mTimeChanged || sizeChanged || pathChanged) {
                 await File.update({
                     atime: atimeFile, mtime: mtimeFile, size: sizeFile,
-                    path: file, md5_hash,
+                    path: file, md5_hash, name: fileName,
                 });
                 logger.debug('Music scanner', {
                     phase: 'file table upsert',

@@ -2,6 +2,7 @@ const util = require('util');
 const path = require('path');
 const _ = require('underscore');
 const cp = require('child_process');
+const logger = require('./logger');
 
 const execFile = util.promisify(cp.execFile);
 const exec = util.promisify(cp.exec);
@@ -69,8 +70,5 @@ async function mp3hash(filePath) {
 }
 
 module.exports = {
-    inspect,
-    execute,
-    mp3hash,
-    safePath,
+    inspect, execute, mp3hash, safePath,
 };
