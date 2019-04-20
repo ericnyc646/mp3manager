@@ -15,7 +15,7 @@ const readdir = promisify(fs.readdir);
 
 /**
  * @param {Object} job passed by Queue#add method
- * @returns {Promise} An object containing the files or the error occurred
+ * @returns {Promise<Object>} An object containing the files or the error occurred
  */
 module.exports = function musicQueue(job) {
     // using reject doesn't make bull aware of the job's termination,

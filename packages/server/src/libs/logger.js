@@ -1,4 +1,5 @@
 const { createLogger, format, transports } = require('winston');
+const path = require('path');
 const config = require('../../src/config/getConfig');
 
 const { combine, timestamp, json, colorize,
@@ -6,7 +7,7 @@ const { combine, timestamp, json, colorize,
 } = format;
 const { logging: { level } } = config;
 
-const LOGS_DIR = `${__dirname}/../../logs`;
+const LOGS_DIR = path.join(`${__dirname}/../../logs`, process.env.NODE_ENV.toLowerCase());
 const ERROR_LOG = `${LOGS_DIR}/error.log`;
 const COMBINED_LOG = `${LOGS_DIR}/combined.log`;
 

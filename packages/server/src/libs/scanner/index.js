@@ -30,7 +30,7 @@ class MusicScanner {
 
         const { paths, workers, queueName, keepInMemory } = options;
 
-        this.paths = paths;
+        this.paths = MusicScanner.mapPaths(paths);
         this.workers = workers || os.cpus().length;
         this.keepInMemory = keepInMemory === true;
 
@@ -48,6 +48,43 @@ class MusicScanner {
 
     getQueue() {
         return this.queue;
+    }
+
+    static mapPaths(paths = []) {
+        return paths
+        // .sort((p1, p2) => {
+        //   if (p1.length < p2.length) {
+        //     return -1
+        //   }
+      
+        //   if (p1.length > p2.length) {
+        //     return 1
+        //   }
+      
+        //   return 0
+        // })
+            .reduce((accumulator, currentValue) => {
+                const stats = fs.statSync(path.normalize(currentValue));
+                if (!stats.isDirectory()) {
+                    throw new Error(`Path ${currentValue} is not a directory`);
+                }
+      
+                if (!path.isAbsolute(currentValue)) {
+                    throw new Error(`Passing a relative path: ${currentValue}`);
+                }
+          
+                // this first check gets rid of duplicates
+                if (!accumulator.includes(currentValue)) {
+                    // filters paths which include current value and are shorter
+                    const res = paths.filter((el) => currentValue.startsWith(el) && currentValue.length > el.length);
+                    // if no path includes the current dir, we select it
+                    if (!res.length) {
+                        accumulator.push(currentValue);
+                    }
+                }
+      
+                return accumulator;
+            }, []);
     }
 
     /**

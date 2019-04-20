@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const fileType = require('file-type');
 const _ = require('underscore');
@@ -10,10 +11,16 @@ const EyeD3 = require('../../src/libs/eyeD3');
 const isMp3 = require('../../src/libs/scanner/ismp3');
 const MusicScanner = require('../../src/libs/scanner');
 const { copyFile, moveFile } = require('../libs/testUtils');
+const logger = require('../../src/libs/logger');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
 
 describe('Music scanner functions', () => {
+    afterAll((done) => {
+        logger.close();
+        setTimeout(() => { done(); }, 500);
+    });
+
     it('it can both read strings and buffers', () => {
         expect(isMp3(`${resDir}/fake.mp3`)).toBeFalsy(); // text file with wrong extension
 
@@ -123,11 +130,29 @@ describe('Music scanner functions', () => {
 
         const { affectedRows, insertId, isDuplicated, warningStatus } = await MusicScanner.storeFile(anotherPath);
         expect(warningStatus).toBe(0);
-        expect(affectedRows).toBe(1)
+        expect(affectedRows).toBe(1);
         expect(insertId).not.toBeNull();
         expect(isDuplicated).toBeTruthy();
 
         const foundInTable = await FileDuplicated.isDuplicated(md5, anotherPath);
         expect(foundInTable).toBeTruthy();
+    });
+
+    it('can validate paths passed to the constructor', () => {
+        expect(() => MusicScanner.mapPaths([
+            os.homedir(),
+            __filename,
+        ])).toThrowError(/is not a directory/);
+
+        const RES_DIR = `${__dirname}/../../`;
+
+        const paths = [
+            os.homedir(),
+            `${RES_DIR}/__tests__/resources/tree/level1.1`,
+            RES_DIR,
+        ];
+
+        const reducedPaths = MusicScanner.mapPaths(paths);
+        expect((_.difference(reducedPaths, [RES_DIR, os.homedir()])).length === 0).toBeTruthy();
     });
 });
