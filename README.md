@@ -24,7 +24,9 @@ Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.o
 - __MariaDB 10.3.12__: this is the database explicitly used, but it should seamlessly work with MySQL too.
 - __Redis__: at the moment it's just used by a task manager, Bull, used by the scanner
 - __GCC compiler__: required to compile [mp3hash](https://github.com/sptim/mp3hash)
-- __Python 2.7, >= 3.3__: required by [eyeD3](https://pypi.org/project/eyeD3/). You can install this program with `pip install eyeD3`. `pip` will install the program under `~/.local/bin/` (under Ubuntu). Please put this directory in your PATH.
+- __Python 2.7, >= 3.3__: required by [eyeD3](https://pypi.org/project/eyeD3/). You can install this program with `pip3 install eyeD3`. You can discover which directory pip will use with `pip3 show --files eyed3 | grep -i location` (under Ubuntu). Please put this directory in your PATH.
+
+If you get a warning about pylast missing for eyeD3, you can install it with `sudo pip3 install pylast==2.4.0` (see [this issue](https://github.com/nicfit/eyeD3/issues/307))
 
 ### Windows notes
 
@@ -37,7 +39,7 @@ Regarding GCC, you can install a current version of [MinGW-w64](https://sourcefo
 This is a monorepo which hosts all the parts of the architecture. You can manage Node.js dependencies with [Lerna](https://lernajs.io/). To start modifying this project, just do the following after having cloned this repo:
 
 ```bash
-npm install --global lerna
+npm install --global lerna cross-env
 lerna bootstrap --hoist
 npm link
 ```

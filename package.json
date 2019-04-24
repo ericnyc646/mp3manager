@@ -4,7 +4,7 @@
   "description": "Monorepo's root",
   "main": "index.js",
   "scripts": {
-    "lerna": "lerna bootstrap --hoist",
+    "lerna": "lerna bootstrap",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
     "tree": "tree -I node_modules",
     "startServer": "cross-env NODE_ENV=production node packages/server/src/start.js"
