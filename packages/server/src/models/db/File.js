@@ -33,7 +33,7 @@ class File extends DbModel {
             throw new Error('File.update: missing or null params (md5 required)');
         }
 
-        const { md5_hash, atime, mtime, size, name, thePath } = params;
+        const { md5_hash, atime, mtime, size, name, path } = params;
         const connection = await getConnection();
         try {
             const placeholders = this.getPlaceholders({
@@ -47,7 +47,7 @@ class File extends DbModel {
                           SET ${placeholders}
                           WHERE md5_hash=:md5_hash`,
                 },
-                { name, atime, mtime, size, path: thePath, md5_hash },
+                { name, atime, mtime, size, path, md5_hash },
             );
 
             if (queryResult.warningStatus !== 0) {
@@ -152,6 +152,7 @@ class File extends DbModel {
                 duplicated: e.code === 'ER_DUP_ENTRY',
                 code,
                 message,
+                md5_hash,
             };
         } finally {
             connection.end();
@@ -188,6 +189,7 @@ class File extends DbModel {
      * It gets all the info from the db about a music file performing a JOIN
      * with the metadata's table
      * @param {string} md5 file's MD5
+     * @returns {Promise<Object>} file's data or null if it doesn't exist
      */
     static async getFileAndMetadata(md5) {
         const connection = await getConnection();
@@ -215,7 +217,11 @@ class File extends DbModel {
                 await this.showWarnings(connection);
             }
 
-            return result;
+            if (!_.isEmpty(result)) {
+                return result[0];
+            }
+
+            return [];
         } finally {
             connection.end();
         }
@@ -236,90 +242,6 @@ class File extends DbModel {
         }
 
         return [];
-    }
-
-    /**
-     * It retrieves a music file
-     * @param {Object} params can contains many fields:
-     * `fields` as array or string, like `id, name` or `[id, name]`, default `*`
-     * `conditions` must be a string (optional)
-     * `pagination` an object with `limit` and `offset` (optional)
-     * `sorting` has a `column` and `direction` fields (optional)
-     */
-    static async get(params) {
-        let chosenFields = '*';
-        let chosenConditions;
-        let chosenLimit;
-        let chosenSorting;
-
-        const { fields, where, namedPlaceholders, pagination, sorting } = params;
-
-        if (!_.isEmpty(fields)) {
-            chosenFields = _.isArray(fields) ? fields.join(',') : fields;
-        }
-
-        if (!_.isEmpty(where) && _.isString(where)) {
-            chosenConditions = where;
-        }
-
-        if (!_.isEmpty(sorting)) {
-            const { column, direction } = sorting;
-
-            if (!_.isEmpty(column)) {
-                chosenSorting = column;
-            }
-
-            if (!_.isEmpty(direction) && !_.isEmpty(column)) {
-                chosenSorting += ` ORDER BY ${direction}`;
-            }
-        }
-
-        if (!_.isEmpty(pagination)) {
-            const { limit, offset } = pagination;
-            const theLimit = parseInt(limit, 10);
-            const theOffset = parseInt(offset, 10);
-
-            if (_.isNumber(theLimit) && theLimit >= 0) {
-                chosenLimit = `LIMIT ${theLimit}`;
-            }
-
-            if (_.isNumber(theOffset)) {
-                chosenLimit += `OFFSET ${theOffset}`;
-            }
-        }
-
-        const connection = await getConnection();
-
-        let sql = `SELECT ${chosenFields} FROM ${File.TABLE_NAME} `;
-        if (!_.isEmpty(chosenConditions)) {
-            sql += ` WHERE ${chosenConditions}`;
-        }
-
-        if (!_.isEmpty(chosenSorting)) {
-            sql += chosenSorting;
-        }
-
-        if (!_.isEmpty(chosenLimit)) {
-            sql += chosenLimit;
-        }
-
-        try {
-            const result = await connection.query(
-                {
-                    namedPlaceholders: true,
-                    sql,
-                },
-                namedPlaceholders,
-            );
-
-            if (result.warningStatus !== 0) {
-                await this.showWarnings(connection);
-            }
-
-            return result;
-        } finally {
-            connection.end();
-        }
     }
 }
 

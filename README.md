@@ -1,6 +1,7 @@
 # MP3 Manager
 
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/df633fac03554e5a98540824373cd3a8)](https://www.codacy.com/app/chrisvoo/mp3manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=chrisvoo/mp3manager&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.com/chrisvoo/mp3manager.svg?branch=master)](https://travis-ci.com/chrisvoo/mp3manager)
 
 - [Requirements](#requirements)

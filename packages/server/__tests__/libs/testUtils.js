@@ -36,6 +36,23 @@ function copyFile(options) {
     return result;
 }
 
+/**
+ * Moves a file to another temp directory
+ * @param {String} filePath
+ * @returns {String} the new path 
+ */
+function moveFile(filePath) {
+    if (_.isEmpty(filePath)) {
+        throw new Error('moveFile: filePath missing');
+    }
+
+    const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'mm-'));
+    const newPath = `${folder}/copyfile.mp3`;
+    fs.copyFileSync(filePath, newPath);
+    return newPath;
+}
+
 module.exports = {
     copyFile,
+    moveFile,
 };

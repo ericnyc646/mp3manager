@@ -6,4 +6,3 @@ Promise.all([
     bootstrapApolloServer(),
     bootstrapStreamingServer(),
 ]).then(() => console.timeEnd('boostrap'));
-

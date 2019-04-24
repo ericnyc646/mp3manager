@@ -83,7 +83,7 @@ describe('File model', () => {
         const resMeta = await FileMetadata.upsert(newFilePath, md5_hash);
         expect(_.isNumber(resMeta.insertId)).toBeTruthy();
 
-        const [result] = await File.getFileAndMetadata(md5_hash);
+        const result = await File.getFileAndMetadata(md5_hash);
 
         expect(result.name).toEqual(file.name);
         expect(result.atime).toEqual(file.atime);

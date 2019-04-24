@@ -1,4 +1,4 @@
-CREATE TABLE `file` (
+CREATE TABLE file (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
     atime DATETIME COMMENT 'Access time',
@@ -13,17 +13,18 @@ CREATE TABLE `file` (
 ) ENGINE = InnoDB, COMMENT = 'Music files';
 
 
-CREATE TABLE `file_duplicated` (
+CREATE TABLE file_duplicated (
     id SERIAL,
     path VARCHAR(500) NOT NULL COMMENT 'VARCHAR needed to allow this field to be used in composite UNIQUE KEY',
     md5_hash CHAR(32) COMMENT 'MD5 without including metadata',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    modification_time DATETIME ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_dup(path, md5_hash)
 ) ENGINE = InnoDB, COMMENT = 'Duplicated music files';   
 
 
-CREATE TABLE `file_metadata` (
+CREATE TABLE file_metadata (
     id SERIAL,
     md5_hash CHAR(32) COMMENT 'MD5 without including metadata',
     bitrate SMALLINT UNSIGNED COMMENT 'Expressd in Kbit',
@@ -36,7 +37,7 @@ CREATE TABLE `file_metadata` (
     acoustid_id CHAR(36),
     album TEXT,
     artist TEXT,
-    `date` DATE,
+    date DATE,
     genre JSON,
     isrc JSON COMMENT 'International Standard Recording Code',
     label JSON,
@@ -75,7 +76,7 @@ CREATE TABLE `file_metadata` (
     CHECK (JSON_VALID(writer))
 ) ENGINE = InnoDB, COMMENT = 'Metadata parsed by music-metadata';
 
-CREATE TABLE `band` (
+CREATE TABLE band (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
     genres JSON COMMENT 'Array of genres',
@@ -85,7 +86,7 @@ CREATE TABLE `band` (
 ) ENGINE = InnoDB, COMMENT = 'Music bands';
 
 
-CREATE TABLE `album` (
+CREATE TABLE album (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
     released DATETIME,
@@ -104,7 +105,7 @@ CREATE TABLE `album` (
 ) ENGINE = InnoDB, COMMENT = 'Music albums';
 
 
-CREATE TABLE `musician` (
+CREATE TABLE musician (
     id SERIAL,
     full_name VARCHAR(50) NOT NULL,
     birth_date DATETIME,
@@ -118,7 +119,7 @@ CREATE TABLE `musician` (
 ) ENGINE = InnoDB, COMMENT = 'Artists';
 
 
-CREATE TABLE `album_musician` (
+CREATE TABLE album_musician (
     musician_id BIGINT UNSIGNED NOT NULL,
     album_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -133,7 +134,7 @@ CREATE TABLE `album_musician` (
 ) ENGINE = InnoDB, COMMENT = 'Performers of the albums';
 
 
-CREATE TABLE `track` (
+CREATE TABLE track (
     id SERIAL,
     name VARCHAR(50) NOT NULL,
     bitrate SMALLINT UNSIGNED, 
@@ -151,7 +152,7 @@ CREATE TABLE `track` (
 ) ENGINE = InnoDB, COMMENT = 'Music tracks';
 
 
-CREATE TABLE `file_track` (
+CREATE TABLE file_track (
     file_id BIGINT UNSIGNED NOT NULL,
     track_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
