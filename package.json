@@ -7,7 +7,7 @@
     "lint": "eslint packages/**/*.js",
     "lerna": "lerna bootstrap",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
-    "startServer": "cross-env NODE_ENV=production node packages/server/src/start.js"
+    "pm2-start": "pm2 start scripts/ecosystem.config.js"
   },
   "bin": {
     "mm": "./scripts/cli/mm"

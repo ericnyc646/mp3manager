@@ -1,6 +1,6 @@
 const { createLogger, format, transports } = require('winston');
 const path = require('path');
-const config = require('../../src/config/getConfig');
+const config = require('../config/getConfig');
 
 const { combine, timestamp, json, colorize,
     prettyPrint, simple, errors,
