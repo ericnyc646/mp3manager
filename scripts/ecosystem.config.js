@@ -63,6 +63,22 @@ module.exports = {
                 DEBUG_COLORS: 'true',
             },
             source_map_support: true,
+        },
+        {
+            name: 'mobile',
+            script: 'npm',
+            args: 'start',
+            watch: false,
+            kill_timeout: 3000,
+            max_restarts: 3,
+            cwd: `${BASE_DIR}/packages/mobile`,
+            log_date_format: 'YYYY-MM-DD HH:mm:ss',
+            env: {
+                PROCESS_FILE: 'mp3manager_mobile',
+                NODE_ENV: 'production',
+                DEBUG_COLORS: 'true',
+            },
+            source_map_support: true,
         }
     ],
 };
