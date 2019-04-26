@@ -4,9 +4,9 @@
   "description": "Monorepo's root",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint packages/**/*.js",
     "lerna": "lerna bootstrap",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
-    "tree": "tree -I node_modules",
     "startServer": "cross-env NODE_ENV=production node packages/server/src/start.js"
   },
   "bin": {
@@ -15,9 +15,12 @@
   "devDependencies": {
     "cross-env": "^5.2.0",
     "eslint": "~5.13.0",
+    "eslint-config-airbnb": "^17.1.0",
     "eslint-config-airbnb-base": "~13.1.0",
-    "eslint-plugin-import": "~2.16.0",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jest": "~22.2.2",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.12.4",
     "jest": "~24.1.0",
     "jest-junit": "~6.2.1",
     "regenerator-runtime": "~0.13.1",
@@ -34,6 +37,7 @@
     "url": "https://github.com/chrisvoo/mp3manager/issues"
   },
   "dependencies": {
+    "babel-eslint": "^10.0.1",
     "colors": "~1.3.3",
     "commander": "~2.19.0",
     "mariadb": "~2.0.3",
