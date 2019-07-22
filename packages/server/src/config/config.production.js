@@ -8,7 +8,7 @@ module.exports = {
         webSocketPort: 3668,
     },
     logging: {
-        level: 'info',
+        level: 'debug',
     },
     scanner: {
         removeAllComments: true, // if to leave or not just MusicManager comment
@@ -23,7 +23,7 @@ module.exports = {
         password: 'eR85/!sP$plO=',
         host: '127.0.0.1',
         database: 'mp3manager',
-        connectionLimit: 5,
+        connectionLimit: 50,
     },
     redis: {
         port: 6379,

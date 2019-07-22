@@ -1,6 +1,6 @@
 const _ = require('underscore');
-const { getConnection } = require('../../libs/pool');
-const logger = require('../../libs/logger');
+const { getConnection, showPoolInfo } = require('../../../libs/pool');
+const logger = require('../../../libs/logger');
 
 class DbModel {
     /**
@@ -178,8 +178,23 @@ class DbModel {
             }
 
             return result;
+        } catch (e) {
+            logger.error('DbModel', {
+                message: e.message,
+                stack: e.stack,
+                params,
+                sql,
+            });
+            return null;
         } finally {
-            connection.end();
+            logger.info('DbModel: ', showPoolInfo());
+
+            if (connection) {
+                logger.debug('Connection ended');
+                await connection.end();
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 }

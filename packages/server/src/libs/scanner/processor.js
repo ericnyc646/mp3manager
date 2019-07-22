@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
 const isMp3 = require('./ismp3');
+const logger = require('../logger');
 
 const stat = promisify(fs.stat);
 const readdir = promisify(fs.readdir);
@@ -51,6 +52,7 @@ module.exports = function musicQueue(job) {
 
             return resolve(response);
         } catch (e) {
+            logger.error('processor', { error: e.message, stack: e.stack });
             return resolve({
                 error: true,
                 message: e.message,

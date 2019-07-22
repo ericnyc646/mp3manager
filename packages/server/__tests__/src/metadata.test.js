@@ -46,4 +46,10 @@ describe('ID3 Tags', () => {
         const md5 = await mp3hash(resFile);
         expect(md5).toEqual('79b9629de784c871fdb938bd5a5549c8');
     });
+
+    fit('Testing a song', async () => {
+        const songPath = 'D:/Musica/Classica/Wagner - La Cavalcata delle Walkirie.mp3';
+        const metadata = await mm.parseFile(songPath, { duration: true });
+        console.log(metadata);
+    });
 });

@@ -1,5 +1,6 @@
 const DbModel = require('./DbModel');
-const { getConnection } = require('../../libs/pool');
+const { getConnection, showPoolInfo } = require('../../../libs/pool');
+const logger = require('../../../libs/logger');
 
 /**
  * It models the "file" table.
@@ -41,8 +42,22 @@ class FileDuplicated extends DbModel {
             }
 
             return queryResult[0];
+        } catch (e) {
+            logger.error('FileDuplicated', {
+                message: e.message,
+                stack: e.stack,
+                thePath,
+            });
+            return null;
         } finally {
-            connection.end();
+            logger.info('FileDuplicated: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
@@ -71,8 +86,22 @@ class FileDuplicated extends DbModel {
             }
 
             return queryResult;
+        } catch (e) {
+            logger.error('Fileduplicated', {
+                message: e.message,
+                stack: e.stack,
+                thePath,
+            });
+            return null;
         } finally {
-            connection.end();
+            logger.info('FileDuplicated: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
@@ -97,8 +126,22 @@ class FileDuplicated extends DbModel {
             }
 
             return result;
+        } catch (e) {
+            logger.error('Fileduplicated', {
+                message: e.message,
+                stack: e.stack,
+                fileId,
+            });
+            return null;
         } finally {
-            connection.end();
+            logger.info('FileDuplicated: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 }

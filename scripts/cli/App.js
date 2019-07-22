@@ -1,7 +1,9 @@
-const mariadb = require('mariadb');
 const util = require('util');
 const childProcess = require('child_process');
 const _ = require('underscore');
+require('colors');
+
+const MusicScanner = require(`${__dirname}/../../packages/server/src/libs/scanner`);
 
 const exec = util.promisify(childProcess.exec);
 
@@ -11,18 +13,39 @@ const exec = util.promisify(childProcess.exec);
  */
 class App {
     constructor(options) {
-        const { env, user, password, host = 'localhost', command } = options;
+        const {
+            env, user: rootUser, password: rootPass, host = 'localhost',
+            command, recreateDb, verbose, dryRun,
+            paths,
+        } = options;
         this.env = env;
-        this.user = user;
-        this.host = host;
-        this.password = password;
+        this.host = host; // database host (install command)
+
+        // we use a privileged user just for the install command, for the rest
+        // we use the dedicated user created with initUsers method
+        if (command === 'install') {
+            this.user = rootUser; // privileged user
+            this.password = rootPass; // privileged user
+        } else {
+            const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
+            const { host: optionHost, user, password } = config.db;
+            this.user = user;
+            this.password = password;
+            this.host = optionHost;
+        }
+
+        this.recreateDb = recreateDb; // to destroy or not the db before scanning (scan command)
+        this.dryRun = dryRun; // to keep in memory or not the music files (scan command)
+        this.paths = paths;
         this.command = command;
         this.connection = null;
+        this.verbose = verbose;
     }
 
     /**
      * Run one of the methods beloging to this class, using the command
      * parameter passed by `mm`
+     * @returns {Promise} it returns the response of the corresponding command executed
      */
     run() {
         try {
@@ -53,9 +76,31 @@ class App {
     }
 
     /**
-     * Shortcut for installing creating users ad database. If they already exist, they'll
-     * be dropped
+     * Scans the directories passed as parameter
      */
+    async scan() {
+        if (this.recreateDb) {
+            console.log(`Recreating DB for ${this.env}`);
+
+            // This process assumes that the mp3admin user has already been created.
+            // if this is not the case, please use install command before.
+            const resDb = await this.initdb();
+            if (!resDb) {
+                return null;
+            }
+        }
+
+        const scanner = new MusicScanner({
+            keepInMemory: this.dryRun,
+            paths: this.paths,
+        });
+
+        return scanner.scan();
+    }
+
+    /**
+     * It creates the users and the database. If they already exist, they'll
+     * be dropped. */
     install() {
         return this.initUsers()
             .then((result) => {
@@ -76,14 +121,10 @@ class App {
             return this.connection;
         }
 
-        const config = require(`${__dirname}/../../packages/server/src/config/config.${this.env}.js`);
-        const { host } = config.db;
-
         return mariadb.createConnection({
             user: this.user,
-            host,
+            host: this.host,
             password: this.password,
-            // database: 'mysql',
         });
     }
 
@@ -126,8 +167,9 @@ class App {
 
     /**
      * It drops and recreates the music database for a particular environment.
-     * It relies on a MariaDB account with privileges for creating users and database (default
-     * `root`)
+     * If the database has never been created, it relies on a MariaDB account with privileges
+     * for creating users and database (default `root`)
+     * @returns {Promise<boolean>} true if the database has been successfully created, false otherwise
      */
     async initdb() {
         try {

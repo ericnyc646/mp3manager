@@ -1,11 +1,12 @@
 const fs = require('fs');
 const _ = require('underscore');
 const { promisify } = require('util');
-const { getConnection } = require('../../libs/pool');
-const { scanner: { batchSize } } = require('../../config/getConfig');
-const { mp3hash } = require('../../libs/utils');
+const { getConnection, showPoolInfo } = require('../../../libs/pool');
+const { scanner: { batchSize } } = require('../../../config/getConfig');
+const { mp3hash } = require('../../../libs/utils');
 const FileMetadata = require('./FileMetadata');
 const DbModel = require('./DbModel');
+const logger = require('../../../libs/logger');
 
 const getStats = promisify(fs.stat);
 
@@ -34,9 +35,12 @@ class File extends DbModel {
         }
 
         const { md5_hash, atime, mtime, size, name, path } = params;
+        let placeholders;
+        
         const connection = await getConnection();
+
         try {
-            const placeholders = this.getPlaceholders({
+            placeholders = this.getPlaceholders({
                 filter_out: ['md5_hash'],
                 forUpdate: true,
             });
@@ -55,8 +59,23 @@ class File extends DbModel {
             }
 
             return queryResult;
+        } catch (e) {
+            logger.error('File', {
+                message: e.message,
+                stack: e.stack,
+                md5_hash,
+                placeholders,
+            });
+            return null;
         } finally {
-            connection.end();
+            logger.info('File: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
@@ -67,44 +86,64 @@ class File extends DbModel {
      */
     static async batchInsert(files) {
         const connection = await getConnection();
+        let batchSql;
 
-        const batchSql = {
-            namedPlaceholders: true,
-            sql: `INSERT INTO ${File.TABLE_NAME}
-                   (${this.getFields()})
-                  VALUES (${this.getPlaceholders()})`,
-        };
-        let values = [];
-        const promises = [];
+        try {
+            batchSql = {
+                namedPlaceholders: true,
+                sql: `INSERT INTO ${File.TABLE_NAME}
+                    (${this.getFields()})
+                    VALUES (${this.getPlaceholders()})`,
+            };
+            let values = [];
+            const promises = [];
 
-        for (const file of files) {
-            if (values.length === batchSize) {
-                // no nested object so it results in a deep copy
-                const sqlValues = Object.assign([], values);
-                promises.push(connection.batch(batchSql, sqlValues));
-                values = [];
+            for (const file of files) {
+                if (values.length === batchSize) {
+                    // no nested object so it results in a deep copy
+                    const sqlValues = Object.assign([], values);
+                    promises.push(connection.batch(batchSql, sqlValues));
+                    values = [];
+                }
+
+                const { name, path: thePath } = file;
+                // eslint-disable-next-line
+                const result = await Promise.all([
+                    mp3hash(thePath),
+                    getStats(thePath),
+                ]);
+                const [md5_hash, stat] = result;
+                const { atime, mtime, size } = stat;
+
+                values.push({
+                    name, atime, mtime, size, path: thePath, md5_hash,
+                });
             }
 
-            const { name, path: thePath } = file;
-            // eslint-disable-next-line
-            const result = await Promise.all([
-                mp3hash(thePath),
-                getStats(thePath),
-            ]);
-            const [md5_hash, stat] = result;
-            const { atime, mtime, size } = stat;
+            if (!_.isEmpty(values)) {
+                promises.push(connection.batch(batchSql, values));
+            }
 
-            values.push({
-                name, atime, mtime, size, path: thePath, md5_hash,
+            const res = await Promise.all(promises);
+            return res.reduce((accumulator, currentValue) => accumulator + currentValue.affectedRows, 0);
+        } catch (e) {
+            logger.error('File', {
+                message: e.message,
+                stack: e.stack,
+                filesCount: files.length,
+                sql: batchSql,
             });
-        }
+            return null;
+        } finally {
+            logger.info('File: ', showPoolInfo());
 
-        if (!_.isEmpty(values)) {
-            promises.push(connection.batch(batchSql, values));
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
-
-        const res = await Promise.all(promises);
-        return res.reduce((accumulator, currentValue) => accumulator + currentValue.affectedRows, 0);
     }
 
     /**
@@ -155,7 +194,14 @@ class File extends DbModel {
                 md5_hash,
             };
         } finally {
-            connection.end();
+            logger.info('File: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
@@ -181,7 +227,14 @@ class File extends DbModel {
 
             return result;
         } finally {
-            connection.end();
+            logger.info('File: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
@@ -223,7 +276,14 @@ class File extends DbModel {
 
             return [];
         } finally {
-            connection.end();
+            logger.info('File: ', showPoolInfo());
+
+            if (connection) {
+                await connection.end();
+                logger.debug('Connection ended');
+            } else {
+                logger.warn('connection was null');
+            }
         }
     }
 
