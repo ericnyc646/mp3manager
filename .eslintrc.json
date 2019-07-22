@@ -1,5 +1,6 @@
 {
-    "extends": "airbnb-base",
+    "extends": "airbnb",
+    "parser": "babel-eslint",
     "env": {
         "node": true,
         "es6": true,
@@ -31,7 +32,11 @@
         "no-shadow": ["error", { "allow": ["err"] }],
         "curly": ["error", "all"],
         "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-        "arrow-parens": ["error", "always"]
+        "arrow-parens": ["error", "always"],
+
+        "react/jsx-filename-extension": 0,
+        "react/jsx-indent": 0,
+        "react/jsx-indent-props": 0
     },
     "plugins": [
       "jest"

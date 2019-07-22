@@ -9,7 +9,6 @@ const config = require('../config/getConfig');
 const schema = require('../models/graphql/schema');
 
 function bootstrapApolloServer() {
-    console.log('config', config);
     return new Promise((resolve, reject) => {
         try {
             const app = express();
@@ -19,19 +18,18 @@ function bootstrapApolloServer() {
 
             const httpServer = http.createServer();
 
-            httpServer.listen(config.frontend.webSocketPort, '0.0.0.0', () =>
-                new SubscriptionServer({
-                    execute,
-                    subscribe,
-                    schema,
-                    onConnect: async (connectionParams) => {
-                        console.log(connectionParams);
-                        return {};
-                    },
-                }, {
-                    server: httpServer,
-                    path: '/subscriptions',
-                }));
+            httpServer.listen(config.frontend.webSocketPort, '0.0.0.0', () => new SubscriptionServer({
+                execute,
+                subscribe,
+                schema,
+                onConnect: async (connectionParams) => {
+                    console.log(connectionParams);
+                    return {};
+                },
+            }, {
+                server: httpServer,
+                path: '/subscriptions',
+            }));
 
             const server = new ApolloServer({
                 debug: true,

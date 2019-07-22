@@ -2,7 +2,7 @@
 const os = require('os');
 const fs = require('fs');
 
-const BASE_DIR = `${os.homedir()}/Documents/mp3manager`;
+const BASE_DIR = `${os.homedir()}/Documents/GitHub/mp3manager`;
 
 fs.stat(BASE_DIR, function callback(err, stats) {
     if (err) {
@@ -25,16 +25,16 @@ module.exports = {
         {
             name: 'server',
             script: 'npm',
-            args: 'run startServer',
+            args: 'start',
             watch: [`${BASE_DIR}/packages/server`],
             watch_options: {
                 cwd: `${BASE_DIR}/packages/server`,
             },
             wait_ready: true,
-            ignore_watch: ['node_modules', '__test__'],
+            ignore_watch: ['node_modules', '__test__', 'logs'],
             kill_timeout: 3000,
             max_restarts: 3,
-            cwd: BASE_DIR,
+            cwd: `${BASE_DIR}/packages/server`,
             log_date_format: 'YYYY-MM-DD HH:mm:ss',
             env: {
                 PROCESS_FILE: 'mp3manager_server',
@@ -43,5 +43,42 @@ module.exports = {
             },
             source_map_support: true,
         },
+        {
+            name: 'streamer',
+            script: 'npm',
+            args: 'start',
+            watch: [`${BASE_DIR}/packages/streamer`],
+            watch_options: {
+                cwd: `${BASE_DIR}/packages/streamer`,
+            },
+            wait_ready: true,
+            ignore_watch: ['node_modules', '__test__', 'logs'],
+            kill_timeout: 3000,
+            max_restarts: 3,
+            cwd: `${BASE_DIR}/packages/streamer`,
+            log_date_format: 'YYYY-MM-DD HH:mm:ss',
+            env: {
+                PROCESS_FILE: 'mp3manager_streamer',
+                NODE_ENV: 'production',
+                DEBUG_COLORS: 'true',
+            },
+            source_map_support: true,
+        },
+        {
+            name: 'mobile',
+            script: 'npm',
+            args: 'start',
+            watch: false,
+            kill_timeout: 3000,
+            max_restarts: 3,
+            cwd: `${BASE_DIR}/packages/mobile`,
+            log_date_format: 'YYYY-MM-DD HH:mm:ss',
+            env: {
+                PROCESS_FILE: 'mp3manager_mobile',
+                NODE_ENV: 'production',
+                DEBUG_COLORS: 'true',
+            },
+            source_map_support: true,
+        }
     ],
 };
