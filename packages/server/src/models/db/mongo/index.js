@@ -1,4 +1,3 @@
-// import _ from 'underscore';
 const mongoose = require('mongoose');
 const config = require('../../../config/getConfig');
 

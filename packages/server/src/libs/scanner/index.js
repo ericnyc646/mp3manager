@@ -2,7 +2,8 @@ const path = require('path');
 const mm = require('music-metadata');
 const _ = require('underscore');
 const fs = require('fs');
-const fileType = require('file-type');
+const audioType = require('audio-type');
+const util = require('util');
 const { promisify } = require('util');
 const logger = require('../logger');
 
@@ -28,7 +29,9 @@ class MusicScanner {
 
         this.paths = this.mapPaths(paths);
         this.keepInMemory = keepInMemory === true;
-        this.processResult = {};
+        this.processResult = {
+            totFiles: 0,
+        };
         logger.debug('Music scanner options', options);
     }
 
@@ -64,12 +67,8 @@ class MusicScanner {
 
     async processDirectory(dir) {
         const dirents = await readdir(dir, { withFileTypes: true });
-        console.log(`Processing ${dir}`);
-        const result = {
-            totFiles: 0,
-        };
 
-        return Promise.all(dirents.map(async (dirent) => {
+        await Promise.all(dirents.map(async (dirent) => {
             const resource = path.resolve(dir, dirent.name);
 
             if (dirent.isDirectory()) {
@@ -78,15 +77,13 @@ class MusicScanner {
             
             if (dirent.isFile()) {
                 const buf = fs.readFileSync(resource);
-                const fileRes = fileType(buf);          
-                if (!_.isEmpty(fileRes) && fileRes.ext === 'mp3') {
+                const fileRes = audioType(buf);          
+                if (fileRes === 'mp3') {
                     const metadata = await mm.parseBuffer(buf, '.mp3', { duration: true });
-                    result.totFiles += 1;
-                    // console.log(util.inspect(metadata, { showHidden: false, depth: null }));
+                    const { format, common } = metadata;
+                    this.processResult.totFiles += 1;
                 }
             }
-
-            return result;
         }));
     }
 
@@ -99,11 +96,12 @@ class MusicScanner {
             promises.push(this.processDirectory(thePath));
         }
 
-        const res = await Promise.all(promises);
+        await Promise.all(promises);
         const end = new Date(Date.now() - start);
         const humandate = `${end.getUTCHours()} hours, ${end.getUTCMinutes()} minutes and ${end.getUTCSeconds()} second(s)`;
 
-        console.log(`Job finished in ${humandate}`, res);
+        this.processResult.executionTime = humandate;
+        return this.processResult;
     }
 }
 
