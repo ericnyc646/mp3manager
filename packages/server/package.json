@@ -38,11 +38,9 @@
     "mariadb": "^2.0.5",
     "merge-graphql-schemas": "~1.5.8",
     "moment": "^2.24.0",
+    "mongoose": "^5.6.6",
     "music-metadata": "^3.1.6",
     "nodebrainz": "~2.1.1",
-    "readdir-cluster": "^1.1.0",
-    "readdirp": "^3.1.1",
-    "recursive-readdir": "~2.2.2",
     "request": "~2.88.0",
     "request-promise-native": "^1.0.7",
     "subscriptions-transport-ws": "^0.9.16",
@@ -50,6 +48,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.2",
     "random-buffer": "^0.1.0"
   }
 }

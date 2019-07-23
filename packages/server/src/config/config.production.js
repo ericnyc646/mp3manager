@@ -10,20 +10,26 @@ module.exports = {
     logging: {
         level: 'debug',
     },
-    scanner: {
-        removeAllComments: true, // if to leave or not just MusicManager comment
-        batchSize: 100, // how many values to batch insert
-    },
     apiIntegration: { // shared properties between integrations
         userAgent: 'mp3manager/voodoo81people@gmail.com',
     },
-    // dedicated to mariadb createPool function
     db: {
-        user: 'mp3admin',
-        password: 'eR85/!sP$plO=',
-        host: '127.0.0.1',
-        database: 'mp3manager',
-        connectionLimit: 50,
+        mysql: {
+            user: 'mp3admin',
+            password: 'eR85/!sP$plO=',
+            host: '127.0.0.1',
+            database: 'mp3manager',
+            connectionLimit: 50,
+        },
+        mongo: {
+            dns: 'mongodb://localhost:27017/music_manager',
+            mongooseDebug: false,
+            mongooseOptions: {
+                autoIndex: true,
+                useNewUrlParser: true,
+                useCreateIndex: true,
+            },
+        },
     },
     redis: {
         port: 6379,
