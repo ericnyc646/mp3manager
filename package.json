@@ -4,6 +4,7 @@
   "description": "Monorepo's root",
   "main": "index.js",
   "scripts": {
+    "scan": "cross-env NODE_ENV=production NODE_OPTIONS='--max-old-space-size=4096' node scripts/cli/mm scan C:\\Users\\User\\Dropbox",
     "lint": "eslint packages/**/*.js",
     "lerna": "lerna bootstrap",
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",

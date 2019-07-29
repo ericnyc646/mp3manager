@@ -6,6 +6,7 @@ const config = require('../../../config/getConfig');
  */
 async function bootstrapMongoose() {
     const { dns, mongooseOptions, mongooseDebug } = config.db.mongo;
+    console.log('Trying to connect to ', dns);
 
     mongoose.set('useFindAndModify', false);
     mongoose.set('useCreateIndex', true);

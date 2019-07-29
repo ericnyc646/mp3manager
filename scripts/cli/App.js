@@ -56,6 +56,7 @@ class App {
      */
     async scan() {
         await bootstrapMongoose();
+        console.log('Connected to mongo...');
 
         const scanner = new MusicScanner({
             keepInMemory: this.dryRun,

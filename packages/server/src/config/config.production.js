@@ -23,7 +23,7 @@ module.exports = {
         },
         mongo: {
             dns: 'mongodb://localhost:27017/music_manager',
-            mongooseDebug: false,
+            mongooseDebug: true,
             mongooseOptions: {
                 autoIndex: true,
                 useNewUrlParser: true,

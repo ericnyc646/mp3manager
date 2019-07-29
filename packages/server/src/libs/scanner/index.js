@@ -2,13 +2,17 @@ const path = require('path');
 const mm = require('music-metadata');
 const _ = require('underscore');
 const fs = require('fs');
+
 const audioType = require('audio-type');
-const util = require('util');
+// const util = require('util');
 const { promisify } = require('util');
 const logger = require('../logger');
+const { mp3hash } = require('../../../src/libs/utils');
+const MusicFile = require('../../../src/models/db/mongo/music_files');
 
 const getStats = promisify(fs.stat);
 const readdir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
 // https://github.com/winstonjs/winston#profiling
 
 class MusicScanner {
@@ -31,8 +35,9 @@ class MusicScanner {
         this.keepInMemory = keepInMemory === true;
         this.processResult = {
             totFiles: 0,
+            totBytes: 0,
         };
-        logger.debug('Music scanner options', options);
+        logger.debug('Music scanner options', [options]);
     }
 
     getQueue() {
@@ -76,12 +81,26 @@ class MusicScanner {
             }
             
             if (dirent.isFile()) {
-                const buf = fs.readFileSync(resource);
+                logger.debug(resource);
+                const buf = await readFile(resource);
                 const fileRes = audioType(buf);          
                 if (fileRes === 'mp3') {
                     const metadata = await mm.parseBuffer(buf, '.mp3', { duration: true });
-                    const { format, common } = metadata;
+                    const stats = await getStats(buf);
+                    const fileSize = stats.size;
+                    const audioHash = await mp3hash(resource);
+
+                    const fileInstance = {
+                        path: resource,
+                        audioHash,
+                        fileSize,
+                        metadata,
+                    };
+
+                    await MusicFile.create(fileInstance);
                     this.processResult.totFiles += 1;
+                    this.processResult.totBytes += fileSize;
+                    logger.debug('File processed', [resource, this.processResult]);
                 }
             }
         }));
