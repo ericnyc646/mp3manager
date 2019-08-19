@@ -1,7 +1,7 @@
 const path = require('path');
 const mm = require('music-metadata');
 const _ = require('underscore');
-const fs = require('fs');
+const fs = require('graceful-fs');
 
 const audioType = require('audio-type');
 // const util = require('util');
@@ -36,6 +36,8 @@ class MusicScanner {
         this.processResult = {
             totFiles: 0,
             totBytes: 0,
+            list: [],
+            dirQueue: [],
         };
         logger.debug('Music scanner options', [options]);
     }
@@ -70,40 +72,74 @@ class MusicScanner {
             }, []);
     }
 
-    async processDirectory(dir) {
-        const dirents = await readdir(dir, { withFileTypes: true });
-
-        await Promise.all(dirents.map(async (dirent) => {
-            const resource = path.resolve(dir, dirent.name);
-
-            if (dirent.isDirectory()) {
-                return this.processDirectory(resource);
+    async scanDir(dir, fileList) {
+        const files = await readdir(dir);
+        for (const file of files) {
+            const filePath = path.join(dir, file);
+            fileList.push(filePath);
+            try {
+                const stats = await getStats(filePath);
+                if (stats.isDirectory()) {
+                    await scanDir(filePath, fileList);
+                }
+            } catch (err) {
+                console.error(err);
             }
-            
-            if (dirent.isFile()) {
-                logger.debug(resource);
-                const buf = await readFile(resource);
-                const fileRes = audioType(buf);          
-                if (fileRes === 'mp3') {
-                    const metadata = await mm.parseBuffer(buf, '.mp3', { duration: true });
-                    const stats = await getStats(buf);
-                    const fileSize = stats.size;
-                    const audioHash = await mp3hash(resource);
+        }
+    
+        return fileList;   
+    }
 
-                    const fileInstance = {
-                        path: resource,
-                        audioHash,
-                        fileSize,
-                        metadata,
-                    };
+    async processFile(resource) {
+        const buf = await readFile(resource);
+        const fileRes = audioType(buf);          
+        if (fileRes === 'mp3') {
+            this.processResult.list.push(resource);
+            this.processResult.totFiles += 1;
+            // const metadata = await mm.parseBuffer(buf, '.mp3', { duration: true });
+            // const stats = await getStats(resource);
+            // const fileSize = stats.size;
+            // const audioHash = await mp3hash(resource);
 
-                    await MusicFile.create(fileInstance);
-                    this.processResult.totFiles += 1;
-                    this.processResult.totBytes += fileSize;
-                    logger.debug('File processed', [resource, this.processResult]);
+            // const fileInstance = {
+            //     path: resource,
+            //     audioHash,
+            //     fileSize,
+            //     metadata,
+            // };
+
+            // await MusicFile.create(fileInstance);
+            // this.processResult.totFiles += 1;
+            // this.processResult.totBytes += fileSize;
+            // logger.debug('File processed', [resource, this.processResult]);
+        }
+    }
+
+    async processDirectory() {
+
+        setInterval(() => this.logStats(this.processResult.list), 5000);
+
+        while(this.processResult.dirQueue.length > 0) {
+            const dir = this.processResult.dirQueue.shift();
+            const dirents = await readdir(dir, { withFileTypes: true });
+            const filesPromises = [];
+
+            for (const dirent of dirents) {
+                const resource = path.resolve(dir, dirent.name);
+                if (dirent.isDirectory()) {
+                    this.processResult.dirQueue.push(resource);
+                } else if (dirent.isFile()) {
+                    filesPromises.push(this.processFile(resource));
                 }
             }
-        }));
+
+            await Promise.all(filesPromises);
+        }
+    }
+
+    logStats(fileList) {
+        console.log("Scanned file count: ",  this.processResult.totFiles);
+        console.log(`Heap total: ${parseInt(process.memoryUsage().heapTotal/1024)} KB, used: ${parseInt(process.memoryUsage().heapUsed/1024)} KB`);
     }
 
     async scan() {
@@ -112,14 +148,16 @@ class MusicScanner {
         const start = Date.now();
 
         for (const thePath of this.paths) {
-            promises.push(this.processDirectory(thePath));
+            this.processResult.dirQueue.push(thePath);
+            promises.push(this.processDirectory());
         }
 
-        await Promise.all(promises);
+        const paths = await Promise.all(promises);
         const end = new Date(Date.now() - start);
         const humandate = `${end.getUTCHours()} hours, ${end.getUTCMinutes()} minutes and ${end.getUTCSeconds()} second(s)`;
 
         this.processResult.executionTime = humandate;
+        this.processResult.paths = paths;
         return this.processResult;
     }
 }

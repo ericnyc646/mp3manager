@@ -4,6 +4,7 @@ const program = require('commander');
 const _ = require('underscore');
 require('colors');
 
+
 function setEnvironment(env) {
     if (!/^(test|production)$/i.test(env)) {
         console.error(`Wrong environment: ${env}. Must be "test" or "production"`.red);
