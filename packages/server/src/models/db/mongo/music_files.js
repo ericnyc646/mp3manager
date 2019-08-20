@@ -5,7 +5,6 @@ const modelName = 'MusicFiles';
 
 const MusicFiles = new Schema({
     path: { type: String, required: true },
-    audioHash: { type: String, required: true },
     fileSize: Number,
     metadata: Schema.Types.Mixed,
     createdAt: { type: Date, default: Date.now },

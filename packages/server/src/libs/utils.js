@@ -1,11 +1,12 @@
 const util = require('util');
 const path = require('path');
+const crypto = require('crypto');
 const _ = require('underscore');
 const cp = require('child_process');
-const logger = require('./logger');
+// const logger = require('./logger');
 
 const execFile = util.promisify(cp.execFile);
-const exec = util.promisify(cp.exec);
+// const exec = util.promisify(cp.exec);
 
 /**
  * Executes an external program passing some arguments to it
@@ -42,7 +43,7 @@ function inspect(obj) {
 
 /**
  * Escapes all quotes chars and wrap the path between quotes. This is useful only
- * when using child_process' functions to pass paths as arguments
+ * when using child_process' functions to pass paths as argumentsl
  * @param {string} path the file's path
  */
 function safePath(filePath) {
@@ -54,19 +55,35 @@ function safePath(filePath) {
 }
 
 /**
- * It calculates the MD5 of the music file, ignoring the metadata
- * @param {string} filePath absolute path of the music file
- * @returns {string} the file's MD5 without metadata
+ * Just blocks the code's execution through a `setTimeout` call.
+ * @param {Number} ms The number of milliseconds to block the execution.
  */
-async function mp3hash(filePath) {
-    const exePath = path.join(__dirname, '../../../../external/mp3hash/mp3hash');
-    const musicFile = `"${filePath.replace(/("+)/g, '\\$1')}"`;
-    const { stdout, stderr } = await exec(`${exePath} ${musicFile}`);
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+  
 
-    if (!_.isEmpty(stderr)) {
-        throw new Error(stderr);
-    }
-    return stdout.split(' ')[0];
+/**
+ * It calculates the SHA1 of the music file, ignoring the metadata
+ * @param {Buffer} data Binary data of the MP3 file
+ * @returns {string} The file's SHA1 hash
+ */
+async function mp3hash(data) {
+    // deal with Error: spawn ENOMEM
+    // const exePath = path.join(__dirname, '../../../../external/mp3hash');
+    // const musicFile = `"${filePath.replace(/("+)/g, '\\$1')}"`;
+    // const process = await execute(`${exePath}/mp3hash`, [filePath], { cwd: exePath });
+    // const { stdout, stderr } = process;
+
+    // if (!_.isEmpty(stderr)) {
+    //     throw new Error(stderr);
+    // }
+
+    // return stdout.split(' ')[0];
+
+    const hash = crypto.createHash('sha1');
+    hash.update(data);
+    return hash.digest('hex');
 }
 
 module.exports = {

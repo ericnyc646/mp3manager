@@ -1,3 +1,0 @@
-[submodule "external/mp3hash"]
-	path = external/mp3hash
-	url = https://github.com/sptim/mp3hash.git
