@@ -9,6 +9,8 @@
 
 ## Players
 
+* Stackoverflow:
+  * [Serving mp3 from Express](https://stackoverflow.com/questions/36957959/how-can-i-serve-mp3-file-on-node-js)
 * [mp3.js](https://www.npmjs.com/package/mp3.js)
 * [fat-mp3](https://www.npmjs.com/package/fat-mp3)
 * [audiocard](https://www.npmjs.com/package/audiocard)

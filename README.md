@@ -23,10 +23,7 @@ Extenal webservices API may be used, such as [MusicBrainz](https://musicbrainz.o
 
 - __Node.js 10.*__: this is the LTS version I've used, but it should work with every version superior to 7.6, which supports `async/await` out of the box without requiring transpilation.
 - __ffmpeg__: used to read MP3 files' metadata. [Windows builds](https://ffmpeg.zeranoe.com/builds/) or `sudo apt install ffmpeg` for Debian like distros.
-- __GCC compiler__: required to compile [mp3hash](https://github.com/sptim/mp3hash)
-- __Python 2.7, >= 3.3__: required by [eyeD3](https://pypi.org/project/eyeD3/). You can install this program with `pip3 install eyeD3`. You can discover which directory pip will use with `pip3 show --files eyed3 | grep -i location` (under Ubuntu). Please put this directory in your PATH.
-
-If you get a warning about pylast missing for eyeD3, you can install it with `sudo pip3 install pylast==2.4.0` (see [this issue](https://github.com/nicfit/eyeD3/issues/307))
+- __mediainfo__: used to get the files' audio details (bitrate, duration). You can get it [here](https://mediaarea.net/en/MediaInfo/Download)
 
 ### Windows notes
 

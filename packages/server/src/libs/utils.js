@@ -1,19 +1,19 @@
 const util = require('util');
 const path = require('path');
+const os = require('os');
+const fs = require('fs');
 const crypto = require('crypto');
 const _ = require('underscore');
 const cp = require('child_process');
-// const logger = require('./logger');
 
 const execFile = util.promisify(cp.execFile);
-// const exec = util.promisify(cp.exec);
 
 /**
  * Executes an external program passing some arguments to it
  * @param {String} cmd command's name
  * @param {Array|String} args arguments to be passed to the command
  * @param {Object} options execFile's options
- * @returns {Promise} it returns an object with stdout, stderr and error keys
+ * @returns {Promise<Object>} it returns an object with stdout, stderr and error keys
  * @see https://nodejs.org/docs/latest-v10.x/api/child_process.html#child_process_child_process_execfile_file_args_options_callback
  */
 async function execute(cmd, args, options = {}) {
@@ -56,36 +56,49 @@ function safePath(filePath) {
 
 /**
  * Just blocks the code's execution through a `setTimeout` call.
- * @param {Number} ms The number of milliseconds to block the execution.
+ * @param {Promise<Number>} ms The number of milliseconds to block the execution.
  */
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * It creates a random temporary directory in the predefined OS' TEMP_DIR_PATH.
+ * @example: /tmp/foo-itXde2 or C:\Users\...\AppData\Local\Temp\foo-itXde2
+ * @returns {Promise<string>} The path of the temp dir created.
+ */
+function createTempDir() {
+    return new Promise((resolve, reject) => {
+        // eslint-disable-next-line consistent-return
+        fs.mkdtemp(path.join(os.tmpdir(), 'foo-'), (err, folder) => {
+            if (err) {
+                return reject(err);
+            }
+
+            fs.mkdir(folder, { recursive: true }, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(folder);
+            });
+        });
+    });
+}
   
 
 /**
- * It calculates the SHA1 of the music file, ignoring the metadata
+ * It calculates the SHA1 (by default) of the music file, ignoring the metadata
+ * @param {string} also The hashing algorithm (SHA1 by default)
  * @param {Buffer} data Binary data of the MP3 file
- * @returns {string} The file's SHA1 hash
+ * @returns {string} The file's hash
  */
-async function mp3hash(data) {
-    // deal with Error: spawn ENOMEM
-    // const exePath = path.join(__dirname, '../../../../external/mp3hash');
-    // const musicFile = `"${filePath.replace(/("+)/g, '\\$1')}"`;
-    // const process = await execute(`${exePath}/mp3hash`, [filePath], { cwd: exePath });
-    // const { stdout, stderr } = process;
-
-    // if (!_.isEmpty(stderr)) {
-    //     throw new Error(stderr);
-    // }
-
-    // return stdout.split(' ')[0];
-
-    const hash = crypto.createHash('sha1');
+async function getHash(algo = 'sha1', data) {
+    const hash = crypto.createHash(algo);
     hash.update(data);
     return hash.digest('hex');
 }
 
 module.exports = {
-    inspect, execute, mp3hash, safePath,
+    inspect, execute, getHash, safePath, sleep,
+    createTempDir,
 };

@@ -1,19 +1,14 @@
 const path = require('path');
-// const mt = require('jsmediatags');
-const ffmetadata = require('ffmetadata');
 const _ = require('underscore');
 const fs = require('graceful-fs');
 const readline = require('readline');
-
-// const audioType = require('audio-type');
-// const util = require('util');
 const { promisify } = require('util');
 const MusicFile = require('../../../src/models/db/mongo/music_files');
+const MetaInfo = require('../../../src/libs/scanner/mediainfo');
+const EyeD3 = require('../../../src/libs/eyeD3');
 
-const getStats = promisify(fs.stat);
-const readdir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
-// https://github.com/winstonjs/winston#profiling
+const readdir = promisify(fs.readdir);
 
 class MusicScanner {
     /**
@@ -68,60 +63,31 @@ class MusicScanner {
             }, []);
     }
 
-    /**
-     * Example with jsmediatags
-     * @param {Buffer} buf 
-    readTags(buf) {
-        return new Promise((resolve, reject) => {
-            mt.read(buf, {
-                onSuccess: (tag) => resolve(tag),
-                onError: (error) => reject(error),
-            });
-        });
-    } */
-
-    readTags(filePath) {
-        return new Promise((resolve, reject) => {
-            ffmetadata.read(filePath, (err, data) => {
-                if (err) {
-                    return reject(err);
-                }
-
-                return resolve(data);
-            });
-        });
-    }
-
     async processFile(resource) {
         if (path.extname(resource).toLowerCase() !== '.mp3') {
             return;
         }
 
-        const tagsToExclude = [
-            'MusicManager',
-        ];
         this.processResult.totFiles += 1;
-        const metadata = {};
+        const metadata = await MetaInfo.getData(resource);
+        const fileSize = metadata.size;
 
-        try {
-            const data = await this.readTags(resource);
-
-            for (const [key, value] of Object.entries(data)) {
-                if (!tagsToExclude.includes(key)) {
-                    metadata[key.replace(/\./g, '_')] = value;
-                }
-            }
-        } catch (e) {
-            console.log(resource, e.message);
-        }
-        const stats = await getStats(resource);
-        const fileSize = stats.size;
+        delete metadata.size;
 
         const fileInstance = {
             path: resource,
             fileSize,
             metadata,
         };
+
+        // if (metadata.hasOwnProperty('image')) {
+        //     const imgPath = await EyeD3.getCoverImage(resource);
+        //     if (!_.isNull(imgPath)) {
+        //         let data = await readFile(imgPath);
+        //         fileInstance.coverImage = data;
+        //         data = null;
+        //     }
+        // }
 
         MusicFile.create(fileInstance);
         
@@ -169,14 +135,15 @@ class MusicScanner {
             promises.push(this.processDirectory());
         }
 
-        this.interval = setInterval(() => this.logStats(this.processResult.totFiles), 5000);
-
-        const paths = await Promise.all(promises);
+        //this.interval = setInterval(() => this.logStats(this.processResult.totFiles), 5000);
+        
+        await Promise.all(promises);
         const end = new Date(Date.now() - start);
         const humandate = `${end.getUTCHours()} hours, ${end.getUTCMinutes()} minutes and ${end.getUTCSeconds()} second(s)`;
 
         this.processResult.executionTime = humandate;
-        this.processResult.paths = paths;
+        //clearInterval(this.interval);
+
         return this.processResult;
     }
 }

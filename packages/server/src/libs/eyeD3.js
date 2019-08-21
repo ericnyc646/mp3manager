@@ -1,8 +1,14 @@
 const _ = require('underscore');
-const { execute, mp3hash } = require('./utils');
+const path = require('path');
+const { execute, createTempDir } = require('./utils');
 const { scanner } = require('../config/getConfig');
 
 class EyeD3 {
+    /**
+     * 
+     * @param {string} stderr Stadard error output
+     * @param {Error} error 
+     */
     static isError(stderr, error) {
         const err = stderr || error;
 
@@ -28,16 +34,9 @@ class EyeD3 {
     }
 
     /**
-     * Comment tag used by the scanner to makr a file as scanned
-     */
-    static get TAG() {
-        return 'MusicManager';
-    }
-
-    /**
      * Global method to run eyeD3
      * @param {Array|string} args arguments to be passed to eyeD3
-     * @returns {Promise} null if an error happens, default stderr otherwise
+     * @returns {Promise<string>} null if an error happens, default stderr otherwise
      */
     static async run(args) {
         const { stderr, stdout, error } = await execute('eyeD3', args);
@@ -85,22 +84,46 @@ class EyeD3 {
     }
 
     /**
+     * It returns the front cover image
+     * @TODO must be deeply tested.
+     * - Sometimes there's no file in the temp dir
+     * - Modify regexp to ignore the case of the extension
+     * - Does the regexp work also on Windows?
+     * @returns {Promise<string>} The image's path for the music file.
+     */
+    static async getCoverImage(filePath) {
+        const tempDir = await createTempDir();
+        const result = await this.run([`--write-images=${tempDir}`, filePath]);
+
+        if (_.isEmpty(result)) {
+            console.log(`EyeD3 returned null for file: ${filePath}`);
+            return null;
+        }
+
+        const res = result.match(/^Writing \/([A-z0-9-_+]+\/)*([A-z0-9]+\.(jpeg|jpg|gif|png|\(null\)))/gm);
+
+        if (!_.isEmpty(res)) {
+            // EyeD3 outputs 'Writing <PATH>...\n'
+            return res[0].split(' ')[1];
+        }
+
+        console.log(`${tempDir} must be checked. File: ${filePath}`);
+        return null;
+    }
+
+    /**
      * Used to mark the file as scanner. It may optionally remove
      * all other comments (default true)
      * @param {string} filePath file's absolute path
      */
-    static async markFileAsScanned(filePath) {
+    static async addComment(filePath, comment) {
         if (_.isEmpty(filePath)) {
-            throw new Error('EyeD3.removeAllTags: passed an empty file path');
+            throw new Error('EyeD3.addComment: passed an empty file path');
         }
 
-        const description = EyeD3.TAG;
-        const md5 = await mp3hash(filePath);
-        const comment = `${description}-${md5}-${Date.now()}`; // the only part visible to music-metadata
-        const lang = 'eng';
         // description and lang are unique among comments. If there's already
         // another comment with the same values, it gets overwritten.
-        const finalComment = `${comment}:${description}:${lang}`;
+        const finalComment = `${comment}:${Date.now()}:eng`;
         
         const args = [];
         const { removeAllComments } = scanner;

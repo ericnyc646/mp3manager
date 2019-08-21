@@ -1,55 +1,32 @@
-const mm = require('music-metadata');
-const { mp3hash } = require('../../src/libs/utils');
+const fs = require('fs');
+const MetaInfo = require('../../src/libs/scanner/mediainfo');
+const EyeD3 = require('../../src/libs/eyeD3');
 
 describe('ID3 Tags', () => {
-    it('can read metadata', async () => {
-        const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
-        const resFile = `${resDir}/Under The Ice (Scene edit).mp3`;
-        const metadata = await mm.parseFile(resFile, { duration: true });
-        const { format, common } = metadata;
-        const { tagTypes, lossless, dataformat, bitrate, sampleRate, numberOfChannels,
-            codecProfile, encoder, duration } = format;
-        const { track, title, artists, artist, album,
-            albumartist, picture, year, comment } = common;
+    const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
+    const resFile = `${resDir}/Under The Ice (Scene edit).mp3`;
 
-        // format
-        expect(tagTypes[0]).toEqual('ID3v2.4');
-        expect(lossless).toBeFalsy();
-        expect(dataformat).toEqual('mp3');
-        expect(bitrate).toBe(320000);
-        expect(sampleRate).toBe(44100);
-        expect(numberOfChannels).toBe(2);
-        expect(codecProfile).toEqual('CBR');
-        expect(encoder).toEqual('LAME3.99r');
-        expect(parseInt(duration, 10)).toBe(128);
+    it('Mediainfo', async () => {
+        const metadata = await MetaInfo.getData(resFile);
 
-        // common
-        expect(track.no).toBe(1);
-        expect(title).toEqual('Under The Ice (Scene edit)');
-        expect(artists[0]).toEqual('UNKLE');
-        expect(artist).toEqual('UNKLE');
-        expect(album).toEqual('Lives Of The Artists: Follow Me Down - Soundtrack');
-        expect(year).toBe(2010);
-        expect(comment[0]).toEqual('Visit http://relentlessenergy.bandcamp.com');
-
-        const { format: imageFormat, type, description, data } = picture[0];
-        expect(imageFormat).toEqual('image/jpeg');
-        expect(type).toEqual('Cover (front)');
-        expect(description).toEqual('cover');
-        expect(Buffer.isBuffer(data)).toBeTruthy();
-        expect(albumartist).toEqual('UNKLE');
+        expect(metadata).not.toBeNull();
+        expect(metadata.size).toBe(5235428);
+        expect(metadata.duration).toBe(128.888);
+        expect(metadata.bitrate.mode).toBe('CBR');
+        expect(metadata.bitrate.value).toBe(320);
+        expect(metadata.title).toBe('Under The Ice (Scene edit)');
+        expect(metadata.album).toBe('Lives Of The Artists: Follow Me Down - Soundtrack');
+        expect(metadata.album_performer).toBe('UNKLE');
+        expect(metadata.performer).toBe('UNKLE');
+        expect(metadata.recorded_date.toISOString().split('T')[0]).toBe('2010-01-01');
+        expect(metadata.last_modified.toISOString()).toEqual('2019-03-25T11:25:56.000Z');
+        expect(metadata.encoded_library).toBe('LAME3.99r');
+        expect(metadata.image.mime).toBe('image/jpeg');
     });
 
-    it('can calculate MD5 without metadata', async () => {
-        const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
-        const resFile = `${resDir}/Under The Ice (Scene edit).mp3`;
-        const md5 = await mp3hash(resFile);
-        expect(md5).toEqual('79b9629de784c871fdb938bd5a5549c8');
-    });
-
-    fit('Testing a song', async () => {
-        const songPath = 'D:/Musica/Classica/Wagner - La Cavalcata delle Walkirie.mp3';
-        const metadata = await mm.parseFile(songPath, { duration: true });
-        console.log(metadata);
+    it('eyeD3 image extraction', async () => {
+        const imgPath = await EyeD3.getCoverImage(resFile);
+        expect(fs.existsSync(imgPath)).toBeTruthy();
+        fs.unlinkSync(imgPath);
     });
 });
