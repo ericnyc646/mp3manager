@@ -1,13 +1,6 @@
-const fs = require('fs');
 const os = require('os');
-const path = require('path');
-const fileType = require('file-type');
 const _ = require('underscore');
-const mm = require('music-metadata');
-const EyeD3 = require('../../src/libs/eyeD3');
-const isMp3 = require('../../src/libs/scanner/ismp3');
 const MusicScanner = require('../../src/libs/scanner');
-const { copyFile, moveFile } = require('../libs/testUtils');
 const logger = require('../../src/libs/logger');
 
 const resDir = `${process.cwd()}/packages/server/__tests__/resources`;
@@ -18,31 +11,25 @@ describe('Music scanner functions', () => {
         setTimeout(() => { done(); }, 500);
     });
 
-    fit('can scan directories recursively', async () => {
+    it('can scan directories recursively', async () => {
         const scanner = new MusicScanner({
-            paths: ['D:/Musica'],
+            paths: [resDir],
             keepInMemory: true,
         });
 
         const res = await scanner.scan();
-        console.log(res);
-
-        // const expectedArrayResult = [
-        //     'Under The Ice (Scene edit).mp3',
-        //     'sample.mp3',
-        //     '1.1.mp3',
-        //     '1.1.1.mp3',
-        //     '3.1.mp3',
-        //     '1.2.mp3',
-        // ];
-        // expect(musicFilesBasenames.sort().every((value, index) => value === expectedArrayResult.sort()[index])).toBeTruthy();
-    }, 86400000);
+        const { totFiles, totBytes, dirQueue, executionTime } = res;
+        expect(totFiles).toBe(6);
+        expect(totBytes).toBe(5902138);
+        expect(dirQueue.length).toBe(0);
+        expect(executionTime).toEqual('0 hours, 0 minutes and 0 second(s)');
+    });
 
     it('can validate paths passed to the constructor', () => {
-        expect(() => MusicScanner.mapPaths([
-            os.homedir(),
-            __filename,
-        ])).toThrowError(/is not a directory/);
+        expect(() => new MusicScanner({
+            paths: [os.homedir(), __filename],
+            keepInMemory: true,
+        })).toThrowError(/is not a directory/);
 
         const RES_DIR = `${__dirname}/../../`;
 
@@ -52,7 +39,7 @@ describe('Music scanner functions', () => {
             RES_DIR,
         ];
 
-        const reducedPaths = MusicScanner.mapPaths(paths);
-        expect((_.difference(reducedPaths, [RES_DIR, os.homedir()])).length === 0).toBeTruthy();
+        const scanner = new MusicScanner({ paths, keepInMemory: true });
+        expect((_.difference(scanner.getPaths(), [RES_DIR, os.homedir()])).length === 0).toBeTruthy();
     });
 });

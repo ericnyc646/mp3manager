@@ -5,9 +5,9 @@ const readline = require('readline');
 const { promisify } = require('util');
 const MusicFile = require('../../../src/models/db/mongo/music_files');
 const MetaInfo = require('../../../src/libs/scanner/mediainfo');
-const EyeD3 = require('../../../src/libs/eyeD3');
+// const EyeD3 = require('../../../src/libs/eyeD3');
 
-const readFile = promisify(fs.readFile);
+// const readFile = promisify(fs.readFile);
 const readdir = promisify(fs.readdir);
 
 class MusicScanner {
@@ -22,10 +22,13 @@ class MusicScanner {
             throw new Error('You must specify the `paths` property (array)');
         }
 
-        const { paths, keepInMemory } = options;
+        const { paths, keepInMemory, printProgress } = options;
 
-        this.paths = this.mapPaths(paths);
+        this.paths = paths;
+        this.mapPaths();
+
         this.keepInMemory = keepInMemory === true;
+        this.printProgress = printProgress || false;
         this.processResult = {
             totFiles: 0,
             totBytes: 0,
@@ -33,12 +36,30 @@ class MusicScanner {
         };
     }
 
+    /**
+     * It returns the directories' queue. Elements inside of it get removed following the LIFO
+     * pattern.
+     * @returns {Array}
+     */
     getQueue() {
         return this.queue;
     }
 
-    mapPaths(paths = []) {
-        return paths
+    /**
+     * It returns the paths to be scanned.
+     * @returns {Array}
+     */
+    getPaths() {
+        return this.paths;
+    }
+
+    /**
+     * It checks that all items specified are absolute paths to directories and
+     * filters out paths included by other specified paths.
+     * @returns void.
+     */
+    mapPaths() {
+        this.paths = this.paths
             .reduce((accumulator, currentValue) => {
                 const stats = fs.statSync(path.normalize(currentValue));
                 if (!stats.isDirectory()) {
@@ -52,7 +73,7 @@ class MusicScanner {
                 // this first check gets rid of duplicates
                 if (!accumulator.includes(currentValue)) {
                     // filters paths which include current value and are shorter
-                    const res = paths.filter((el) => currentValue.startsWith(el) && currentValue.length > el.length);
+                    const res = this.paths.filter((el) => currentValue.startsWith(el) && currentValue.length > el.length);
                     // if no path includes the current dir, we select it
                     if (!res.length) {
                         accumulator.push(currentValue);
@@ -63,6 +84,11 @@ class MusicScanner {
             }, []);
     }
 
+    /**
+     * It process a single file, extracting its metadata and storing them inside Mongo.
+     * @param {string} resource Absolute path to an MP3 file.
+     * @returns void
+     */
     async processFile(resource) {
         if (path.extname(resource).toLowerCase() !== '.mp3') {
             return;
@@ -80,6 +106,7 @@ class MusicScanner {
             metadata,
         };
 
+        // 5x slower uncommenting this block.
         // if (metadata.hasOwnProperty('image')) {
         //     const imgPath = await EyeD3.getCoverImage(resource);
         //     if (!_.isNull(imgPath)) {
@@ -89,7 +116,9 @@ class MusicScanner {
         //     }
         // }
 
-        MusicFile.create(fileInstance);
+        if (!this.keepInMemory) {
+            MusicFile.create(fileInstance);
+        }
         
         this.processResult.totBytes += fileSize;
     }
@@ -99,6 +128,7 @@ class MusicScanner {
 
         while (this.processResult.dirQueue.length > 0) {
             const dir = this.processResult.dirQueue.shift();
+            // eslint-disable-next-line no-await-in-loop
             const dirents = await readdir(dir, { withFileTypes: true });
             
             for (const dirent of dirents) {
@@ -111,12 +141,18 @@ class MusicScanner {
             }
 
             if (filesPromises.length >= 100) {
+                // eslint-disable-next-line no-await-in-loop
                 await Promise.all(filesPromises);
                 filesPromises = [];
             }
         }
     }
 
+    /**
+     * It prints on the same line some stats about the processed files.
+     * @param {Number} totFiles Total files currently processed.
+     * @returns void
+     */
     logStats(totFiles) {
         readline.moveCursor(process.stdout, 0, -1);
         readline.clearLine(process.stdout, 0);
@@ -125,6 +161,11 @@ class MusicScanner {
             `used: ${parseInt(process.memoryUsage().heapUsed / 1024, 10)} KB`);
     }
 
+    /**
+     * Main function called to scan the paths passed as argument to the constructor.
+     * @returns {Object} An object with the final stats (total files, total bytes and 
+     * processing time).
+     */
     async scan() {
         const promises = [];
 
@@ -135,14 +176,18 @@ class MusicScanner {
             promises.push(this.processDirectory());
         }
 
-        //this.interval = setInterval(() => this.logStats(this.processResult.totFiles), 5000);
+        if (this.printProgress) {
+            this.interval = setInterval(() => this.logStats(this.processResult.totFiles), 5000);
+        }
         
         await Promise.all(promises);
         const end = new Date(Date.now() - start);
         const humandate = `${end.getUTCHours()} hours, ${end.getUTCMinutes()} minutes and ${end.getUTCSeconds()} second(s)`;
 
         this.processResult.executionTime = humandate;
-        //clearInterval(this.interval);
+        if (this.printProgress) {
+            clearInterval(this.interval);
+        }
 
         return this.processResult;
     }
