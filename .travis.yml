@@ -8,7 +8,6 @@ before_install:
   - sudo apt-get install -y libchromaprint-tools python3-setuptools python3-pip
   - sudo pip3 install --upgrade pip
   - sudo pip3 install python-magic pathlib eyeD3
-  - gcc -o external/mp3hash/mp3hash external/mp3hash/mp3hash.c external/mp3hash/md5/md5.c
   - eyeD3 --version
 services:
   - redis-server

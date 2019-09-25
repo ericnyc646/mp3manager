@@ -1,5 +1,6 @@
 const _ = require('underscore');
 const path = require('path');
+
 const { execute, createTempDir } = require('./utils');
 const { scanner } = require('../config/getConfig');
 

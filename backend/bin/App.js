@@ -1,9 +1,10 @@
 const util = require('util');
-const childProcess = require('child_process');
 require('colors');
+const childProcess = require('child_process');
 
-const bootstrapMongoose = require(`${__dirname}/../../packages/server/src/models/db/mongo`);
-const MusicScanner = require(`${__dirname}/../../packages/server/src/libs/scanner`);
+const bootstrapMongoose = require('../src/models/db/mongo');
+const MusicScanner = require('../src/libs/scanner');
+
 const exec = util.promisify(childProcess.exec);
 
 /**

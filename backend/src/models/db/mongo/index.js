@@ -9,6 +9,7 @@ async function bootstrapMongoose() {
     console.log('Trying to connect to ', dns);
 
     mongoose.set('useFindAndModify', false);
+    mongoose.set('useUnifiedTopology', true);
     mongoose.set('useCreateIndex', true);
     mongoose.set('debug', mongooseDebug);
     mongoose.Promise = global.Promise;
@@ -19,6 +20,7 @@ async function bootstrapMongoose() {
                 return reject(err);
             }
         
+            console.log("Mongoose connection established")
             return resolve(true);
         });
     });

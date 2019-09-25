@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 const _ = require('underscore');
-const { execute } = require('../utils');
+
+const { execute } = require('./../utils');
 
 /**
  * Wrapper for `mediainfo` CLI app.
@@ -79,6 +80,7 @@ class MediaInfo {
             const { stdout, stderr } = process;
 
             if (!_.isEmpty(stderr)) {
+                console.error(stderr);
                 return {
                     error: true,
                     message: stderr,
@@ -87,6 +89,10 @@ class MediaInfo {
 
             const { media } = JSON.parse(stdout);
             const finalData = {};
+
+            if (_.isEmpty(media)) {
+                return {};
+            }
 
             media.track.forEach((element) => {
                 if (element['@type'] === 'General') {

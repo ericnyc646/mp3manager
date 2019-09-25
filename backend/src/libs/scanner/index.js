@@ -2,9 +2,11 @@ const path = require('path');
 const _ = require('underscore');
 const fs = require('graceful-fs');
 const readline = require('readline');
+
 const { promisify } = require('util');
-const MusicFile = require('../../../src/models/db/mongo/music_files');
-const MetaInfo = require('../../../src/libs/scanner/mediainfo');
+
+const MusicFile = require('./../../models/db/mongo/music_files');
+const MetaInfo = require('./mediainfo');
 // const EyeD3 = require('../../../src/libs/eyeD3');
 
 // const readFile = promisify(fs.readFile);

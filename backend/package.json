@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Media streaming server",
+  "description": "Media streaming and GraphQL server",
   "keywords": [
     "mp3",
     "streams",
@@ -23,10 +23,15 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node src/index.js"
   },
+  "bin": {
+    "mm": "./bin/mm"
+  },
   "dependencies": {
     "apollo-server-express": "~2.0.7",
     "body-parser": "~1.18.3",
     "bytes": "^3.1.0",
+    "colors": "^1.4.0",
+    "commander": "^3.0.1",
     "cors": "^2.8.5",
     "disconnect": "^1.2.1",
     "express": "~4.16.4",
@@ -37,12 +42,10 @@
     "graphql-tools": "^4.0.5",
     "graphql-type-json": "^0.2.4",
     "jsmediatags": "^3.9.2",
-    "mariadb": "^2.0.5",
     "merge-graphql-schemas": "~1.5.8",
     "moment": "^2.24.0",
     "mongoose": "^5.6.6",
     "nodebrainz": "~2.1.1",
-    "p-limit": "^2.2.0",
     "request": "~2.88.0",
     "request-promise-native": "^1.0.7",
     "subscriptions-transport-ws": "^0.9.16",
@@ -51,6 +54,13 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.2",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.17.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
     "random-buffer": "^0.1.0"
   }
 }
