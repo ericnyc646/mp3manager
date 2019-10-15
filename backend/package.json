@@ -46,6 +46,7 @@
     "merge-graphql-schemas": "~1.5.8",
     "moment": "^2.24.0",
     "mongoose": "^5.6.6",
+    "music-metadata": "^4.8.0",
     "nodebrainz": "~2.1.1",
     "request": "~2.88.0",
     "request-promise-native": "^1.0.7",
