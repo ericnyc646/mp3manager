@@ -44,13 +44,13 @@
     "jsmediatags": "^3.9.2",
     "merge-graphql-schemas": "~1.5.8",
     "moment": "^2.24.0",
-    "mongoose": "^5.6.6",
+    "mongoose": "^5.12.4",
     "nodebrainz": "~2.1.1",
     "request": "~2.88.0",
     "request-promise-native": "^1.0.7",
     "subscriptions-transport-ws": "^0.9.16",
     "underscore": "~1.9.1",
-    "winston": "^3.2.1"
+    "winston": "^3.3.4"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.2",
